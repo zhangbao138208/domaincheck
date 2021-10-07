@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Messaging;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
-using System.Windows.Forms;
 
 namespace FK域名检测工具
 {
@@ -38,20 +31,13 @@ namespace FK域名检测工具
             return context.Request.ServerVariables["REMOTE_ADDR"];
         }
 
-        public static string GetIPData(string token, string ip = null, string datatype = "txt")
+        private static string GetIpData(string token, string ip = null, string datatype = "txt")
         {
             try
             {
-                string url = "";
-                if (string.IsNullOrEmpty(ip))
-                {
-                    url = string.Format("https://api.ip138.com/ip/?datatype={0}&token={1}", datatype, token);
-                }
-                else
-                {
-                    url = string.Format("https://api.ip138.com/ip/?ip={0}&datatype={1}&token={2}", ip, datatype, token);
-                }
-                using (WebClient client = new WebClient())
+                var url = "";
+                url = string.IsNullOrEmpty(ip) ? $"https://api.ip138.com/ip/?datatype={datatype}&token={token}" : $"https://api.ip138.com/ip/?ip={ip}&datatype={datatype}&token={token}";
+                using (var client = new WebClient())
                 {
                     client.Encoding = Encoding.UTF8;
                     return client.DownloadString(url);
@@ -62,14 +48,14 @@ namespace FK域名检测工具
                 return "";
             }
         }
-        public static string GetIPAddressAndData(bool isMustCertain)
+        public static string GetIpAddressAndData(bool isMustCertain)
         {
             try
             {
-                string ip = "";
+                var ip = "";
                 if (isMustCertain)
                 {
-                    string data = GetIPData("415dcc20101f2dc52506d14c17c4aa6c");
+                    var data = GetIpData("415dcc20101f2dc52506d14c17c4aa6c");
                     if (!string.IsNullOrEmpty(data))
                     {
                         data = data.Replace(" ", "_");
@@ -94,7 +80,7 @@ namespace FK域名检测工具
 
                     if (IsIPAddress(ip))
                     {
-                        string data2 = GetIPData("415dcc20101f2dc52506d14c17c4aa6c", ip);
+                        string data2 = GetIpData("415dcc20101f2dc52506d14c17c4aa6c", ip);
                         if (string.IsNullOrEmpty(data2))
                         {
                             return ip;

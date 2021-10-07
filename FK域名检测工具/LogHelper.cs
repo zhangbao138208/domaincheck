@@ -3,48 +3,49 @@ using System;
 
 namespace FK域名检测工具
 {
-    public class LogHelper
+    public static class LogHelper
     {
         static LogHelper()
         {
            
-             log = LogManager.GetLogger("FK域名检测工具");
+             Log = LogManager.GetLogger("FK域名检测工具");
         }
-        public static log4net.ILog log = null;
+
+        private static readonly ILog Log;
 
         public static void Info(string msg, Type type)
         {
-            Info(string.Format("{0} - {1}", type.Name, msg));
+            Info($"{type.Name} - {msg}");
         }
 
         public static void Info(string msg)
         {
-            log.Info(msg);
+            Log.Info(msg);
         }
 
         public static void Error(string msg, Exception ex, Type type)
         {
-            Error(string.Format("{0} - {1}", type.Name, msg), ex);
+            Error($"{type.Name} - {msg}", ex);
         }
 
         public static void Error(string msg, Exception ex)
         {
-            log.Error(msg, ex);
+            Log.Error(msg, ex);
         }
 
         public static void Error(string msg)
         {
-            log.Error(msg);
+            Log.Error(msg);
         }
 
         public static void Debug(string msg, Type type)
         {
-            Debug(string.Format("{0} - {1}", type.Name, msg));
+            Debug($"{type.Name} - {msg}");
         }
 
         public static void Debug(string msg)
         {
-            log.Debug(msg);
+            Log.Debug(msg);
         }
     }
 }

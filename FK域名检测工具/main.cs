@@ -1,39 +1,32 @@
-﻿using log4net;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
-using System.Text;
 using System.Threading;
-using System.Web;
 using System.Windows.Forms;
 
 namespace FK域名检测工具
 {
-    public partial class main : Form
+    public partial class Main : Form
     {
-        public static CancellationTokenSource cs;
+        private static CancellationTokenSource _cs;
 
-        private delegate void setRichTexBox(string s, Color color);
-        private Thread g_MainThread;
+        private delegate void SetRichTexBox(string s, Color color);
+        private Thread _gMainThread;
 
-        private string userName = "";
-        private string companyName = "";
-        private int customIndex = 0;
+        private readonly string _userName;
+        private readonly string _companyName;
+        private readonly int _customIndex;
 
        
-        public main(string userName, string companyName, int customIndex)
+        public Main(string userName, string companyName, int customIndex)
         {
             InitializeComponent();
 
-            this.userName = userName;
-            this.companyName = companyName;
-            this.customIndex = customIndex;
+            this._userName = userName;
+            this._companyName = companyName;
+            this._customIndex = customIndex;
 
             //HttpContext context = System.Web.HttpContext.Current;
             //HttpRuntime.Cache.Insert("context", context);
@@ -41,8 +34,8 @@ namespace FK域名检测工具
 
         private void main_Load(object sender, EventArgs e)
         {
-            this.label_company.Text = this.companyName;
-            this.label_account.Text = this.userName;
+            this.label_company.Text = this._companyName;
+            this.label_account.Text = this._userName;
             this.label_mac.Text = CommonFunc.GetMAC();
 
             this.richTextBox_updatelog.Text = @"
@@ -129,7 +122,7 @@ namespace FK域名检测工具
         }
 
         // 更变间隔时间
-        private void trackBar_elspTime_Scroll(object sender, EventArgs e)
+        private void trackBar_time_scroll(object sender, EventArgs e)
         {
             label_elspTime.Text = trackBar_elspTime.Value.ToString();
         }
@@ -137,20 +130,18 @@ namespace FK域名检测工具
         // 开始按钮
         private void button_start_Click(object sender, EventArgs e)
         {
-            if (g_MainThread != null) {
+            if (_gMainThread != null) {
                 return;
             }
-            addNoticeLog("任务开始");
-            cs = new CancellationTokenSource();
-            g_MainThread = new Thread(ThreadMain)
+            AddNoticeLog("任务开始");
+            _cs = new CancellationTokenSource();
+            _gMainThread = new Thread(ThreadMain)
             {
                 //IsBackground = true
             };
-            object [] param = new object[2] { trackBar_elspTime.Value * 1000, this.userName };
-            // param.Add(trackBar_elspTime.Value * 1000);
-            // param.Add(this.userName);
-            g_MainThread.SetApartmentState(ApartmentState.STA);
-            g_MainThread.Start(param);
+            var param = new object[] { trackBar_elspTime.Value * 1000, _userName };
+            _gMainThread.SetApartmentState(ApartmentState.STA);
+            _gMainThread.Start(param);
         }
 
         private void ThreadMain(Object param) {
@@ -165,7 +156,7 @@ namespace FK域名检测工具
             {
                 Thread.Sleep(100);
                 LogHelper.Debug("sleep 100ms");
-                if (cs.Token.IsCancellationRequested)
+                if (_cs.Token.IsCancellationRequested)
                 {
                     LogHelper.Debug("IsCancellationRequested break");
                     break;
@@ -176,22 +167,12 @@ namespace FK域名检测工具
                     if (needCheckedDomainList.Count <= 0)
                     {
                         LogHelper.Debug("needCheckedDomainList.Count <= 0");
-                        if (!requestDomain(needCheckedDomainList))
-                        {
-                            // 请求失败
-                            LogHelper.Debug("请求失败 continue");
-                            continue;
-                         }
-                        else
-                        {
-                            // 请求成功
-                            LogHelper.Debug("请求成功");
-                        }
+                        LogHelper.Debug(!RequestDomain(needCheckedDomainList) ? "请求失败 continue" : "请求成功");
                     }
                     else
                     {
                         LogHelper.Debug("checkDomain");
-                        checkDomain(needCheckedDomainList, ref checkedDomainCount, ref checkFailedDomainCount, timeout, username);
+                        CheckDomain(needCheckedDomainList, ref checkedDomainCount, ref checkFailedDomainCount, timeout, username);
                     }
                 }
                 catch (Exception) {
@@ -203,8 +184,8 @@ namespace FK域名检测工具
         // 暂停按钮
         private void button_pause_Click(object sender, EventArgs e)
         {
-            if (g_MainThread == null) {
-                addErrorLog("当前无工作线程，请先点击【开始】按钮");
+            if (_gMainThread == null) {
+                AddErrorLog("当前无工作线程，请先点击【开始】按钮");
                 return; 
             }
             /*
@@ -215,12 +196,12 @@ namespace FK域名检测工具
             }
             g_MainThread = null;
             */
-            cs.Cancel(false);
-            cs.Token.Register(() =>
+            _cs.Cancel(false);
+            _cs.Token.Register(() =>
             {
-                addNoticeLog("任务停止");
-                g_MainThread.Abort();
-                g_MainThread = null;
+                AddNoticeLog("任务停止");
+                _gMainThread.Abort();
+                _gMainThread = null;
             });
         }
 
@@ -237,11 +218,11 @@ namespace FK域名检测工具
             this.richTextBox_log.SelectionColor = color;
             this.richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
         }
-        private void addLog(string s) {
+        private void AddLog(string s) {
             LogHelper.Debug(s);
             if (this.richTextBox_log.InvokeRequired)
             {
-                setRichTexBox fc = new setRichTexBox(Set);
+                var fc = new SetRichTexBox(Set);
                 this.Invoke(fc, new object[] { s, Color.Gray });
             }
             else
@@ -252,41 +233,41 @@ namespace FK域名检测工具
             }
         }
 
-        private void addNoticeLog(string s)
+        private void AddNoticeLog(string s)
         {
             LogHelper.Info(s);
-            if (this.richTextBox_log.InvokeRequired)
+            if (richTextBox_log.InvokeRequired)
             {
-                setRichTexBox fc = new setRichTexBox(Set);
-                this.Invoke(fc, new object[] { s, Color.Green });
+                var fc = new SetRichTexBox(Set);
+                Invoke(fc, s, Color.Green);
             }
             else
             {
-                this.richTextBox_log.SelectionColor = Color.Green;
+                richTextBox_log.SelectionColor = Color.Green;
                 richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
                 
             }
         }
 
-        private void addErrorLog(string s)
+        private void AddErrorLog(string s)
         {
             LogHelper.Error(s);
-            if (this.richTextBox_log.InvokeRequired)
+            if (richTextBox_log.InvokeRequired)
             {
-                setRichTexBox fc = new setRichTexBox(Set);
-                this.Invoke(fc, new object[] { s, Color.Red });
+                var fc = new SetRichTexBox(Set);
+                Invoke(fc, s, Color.Red);
             }
             else
             {
-                this.richTextBox_log.SelectionColor = Color.Red;
+                richTextBox_log.SelectionColor = Color.Red;
                 richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
                
             }
         }
 
         // 请求5个域名
-        private bool requestDomain(List<DomainCheckCondition> tobeCheckedDomainList) {
-            List<string> strList = new List<string>();
+        private bool RequestDomain(List<DomainCheckCondition> tobeCheckedDomainList) {
+            var strList = new List<string>();
             /*
             for (int i = 0; i < checkedListBox_product.Items.Count; i++)
             {
@@ -297,9 +278,9 @@ namespace FK域名检测工具
             }
             */
             LogHelper.Debug("requestDomain start");
-            if (string.Compare("全部", this.companyName) != 0)
+            if (string.CompareOrdinal("全部", this._companyName) != 0)
             {
-                strList.Add(this.companyName);
+                strList.Add(_companyName);
             }
             else {
                 strList.Add("A01");
@@ -314,27 +295,27 @@ namespace FK域名检测工具
 
             if (strList.Count <= 0) {
                 LogHelper.Debug("strList.Count <= 0");
-                addErrorLog("请先选择至少一个部门.");
+                AddErrorLog("请先选择至少一个部门.");
                 return false;
             }
-            addLog("向服务器请求新域名...");
+            AddLog("向服务器请求新域名...");
 
             var request = new Request();
             var getDomainRequest = new GetDomainRequest { 
                 Products = strList.ToArray(),
-                CustomIndex = this.customIndex,
+                CustomIndex = this._customIndex,
                 MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV)
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
+            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
             var apiPath = "http://" + ip + "/v1/GetDomain";
-            object re = request.Execute<GetDomainResponse>(apiPath,
+            var re = request.Execute<GetDomainResponse>(apiPath,
                 getDomainRequest.ToJson(), "POST");
             LogHelper.Debug("requestDomain请求返回");
             //addLog(getDomainRequest.ToJson());
 
             if (re is string)
             {
-                addErrorLog("从服务器请求新域名失败...");
+                AddErrorLog("从服务器请求新域名失败...");
                 return false;
             }
             else
@@ -348,7 +329,7 @@ namespace FK域名检测工具
                     LogHelper.Debug("requestDomain re is error");
                     if (getDomainResponse.DomainCheckConditions == null)
                     {
-                        addErrorLog("从服务器请求新域名失败...");
+                        AddErrorLog("从服务器请求新域名失败...");
                         return false;
                     }
                     int domainCount = getDomainResponse.DomainCheckConditions.Count();
@@ -364,24 +345,24 @@ namespace FK域名检测工具
                 }
                 else
                 {
-                    addErrorLog("从服务器请求新域名失败... 错误信息：" + getDomainResponse.Error);
+                    AddErrorLog("从服务器请求新域名失败... 错误信息：" + getDomainResponse.Error);
                     return false;
                 }
             }
         }
 
         // 实际监测域名
-        private void checkDomain(List<DomainCheckCondition> tobeCheckedDomainList, 
+        private void CheckDomain(IList<DomainCheckCondition> tobeCheckedDomainList, 
             ref int checkedDomainCount,ref int checkFailedDomainCount, int timeout, string username) 
         {
             LogHelper.Debug("checkDomain start");
-            if (tobeCheckedDomainList.Count() <= 0) {
+            if (!tobeCheckedDomainList.Any()) {
                 LogHelper.Debug("checkDomain tobeCheckedDomainList.Count() <= 0");
                 return;
             }
             checkedDomainCount++;
 
-            addLog("正在监测第 " + checkedDomainCount.ToString() + " 个域名，已有 " + checkFailedDomainCount + " 个域名检查未通过.");
+            AddLog("正在监测第 " + checkedDomainCount.ToString() + " 个域名，已有 " + checkFailedDomainCount + " 个域名检查未通过.");
             DomainCheckCondition condition = tobeCheckedDomainList.First();
             tobeCheckedDomainList.RemoveAt(0);
             if (condition == null)
@@ -391,12 +372,12 @@ namespace FK域名检测工具
             }
 
             // 数据加工
-            string decryptedCheckDomain = AesHelper.AesDecrypt(condition.Domain, AesHelper.AES_KEY, AesHelper.AES_IV);
+            var decryptedCheckDomain = AesHelper.AesDecrypt(condition.Domain, AesHelper.AES_KEY, AesHelper.AES_IV);
 
             //checkDomain = "https://w6609.net";
 
-            string decryptedCheckPath = AesHelper.AesDecrypt(condition.CheckPath, AesHelper.AES_KEY, AesHelper.AES_IV);
-            string decryptedCheckString = AesHelper.AesDecrypt(condition.CheckString, AesHelper.AES_KEY, AesHelper.AES_IV);
+            var decryptedCheckPath = AesHelper.AesDecrypt(condition.CheckPath, AesHelper.AES_KEY, AesHelper.AES_IV);
+            var decryptedCheckString = AesHelper.AesDecrypt(condition.CheckString, AesHelper.AES_KEY, AesHelper.AES_IV);
             if (!decryptedCheckDomain.StartsWith("http://") && !decryptedCheckDomain.StartsWith("https://"))
                 decryptedCheckDomain = "https://" + decryptedCheckDomain;
             if (!decryptedCheckPath.StartsWith("/"))
@@ -405,8 +386,8 @@ namespace FK域名检测工具
 
             LogHelper.Debug("checkDomain STEP1：PING");
             // STEP1：PING
-            bool isCurlSuccess = false;
-            bool isPingBaiduSuccess = false;
+            bool isCurlSuccess;
+            var isPingBaiduSuccess = false;
             try
             {
                 /*
@@ -442,27 +423,26 @@ namespace FK域名检测工具
                 LogHelper.Debug("checkDomain !isCurlSuccess");
                 try
                 {
-                    Ping p2 = new Ping();
-                    Uri httpURL2 = new Uri("https://baidu.com");
-                    PingReply reply2 = p2.Send(httpURL2.Host, timeout);
-                    if (reply2.Status == IPStatus.Success)
-                    {
-                        // 成功
-                        isPingBaiduSuccess = true;
-                        LogHelper.Debug("checkDomain isPingBaiduSuccess 成功");
-                    }
-                    else if (reply2.Status == IPStatus.TimedOut)
-                    {
-                        // 超时
-                        isPingBaiduSuccess = false;
-                        LogHelper.Debug("checkDomain isPingBaiduSuccess 超时");
-                    }
-                    else
-                    {
-                        // 失败
-                        isPingBaiduSuccess = false;
-                        LogHelper.Debug("checkDomain isPingBaiduSuccess 失败");
-                    }
+                    var p2 = new Ping();
+                    var httpUrl2 = new Uri("https://baidu.com");
+                    var reply2 = p2.Send(httpUrl2.Host, timeout);
+                    if (reply2 != null)
+                        switch (reply2.Status)
+                        {
+                            case IPStatus.Success:
+                                // 成功
+                                isPingBaiduSuccess = true;
+                                LogHelper.Debug("checkDomain isPingBaiduSuccess 成功");
+                                break;
+                            case IPStatus.TimedOut:
+                                // 超时
+                                LogHelper.Debug("checkDomain isPingBaiduSuccess 超时");
+                                break;
+                            default:
+                                // 失败
+                                LogHelper.Debug("checkDomain isPingBaiduSuccess 失败");
+                                break;
+                        }
                 }
                 catch (Exception e)
                 {
@@ -473,7 +453,7 @@ namespace FK域名检测工具
 
             if (!isCurlSuccess) {
                 if (isPingBaiduSuccess) {
-                    addErrorLog("域名CURL检查失败.");
+                    AddErrorLog("域名CURL检查失败.");
 
                     if (!TrashDomains.IsTrashDomain(condition.Domain)) {
                         checkFailedDomainCount++;
@@ -481,7 +461,7 @@ namespace FK域名检测工具
                         var checkDomainResultRequest = new CheckDomainResultRequest
                         {
                             Domain = condition.Domain,
-                            CheckIP = CommonFunc.GetIPAddressAndData(true),
+                            CheckIP = CommonFunc.GetIpAddressAndData(true),
                             Creator = username,
                             ClientID = CommonFunc.GetCpuID(),
                             Product = condition.Product,
@@ -489,21 +469,21 @@ namespace FK域名检测工具
                             MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
                             Printscreen = new byte[0]
                         };
-                        var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
+                        var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
                         var apiPath = "http://" + ip + "/v1/SyncCheckResult";
                         LogHelper.Debug("checkDomain CURL失败数据上报开始");
                         var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
                         LogHelper.Debug("checkDomain CURL失败数据上报结束");
                         if (result is string)
                         {
-                            addErrorLog("数据上报失败:" + result);
+                            AddErrorLog("数据上报失败:" + result);
                         }
                         return;
                     }
                 }
                 else
                 {
-                    addErrorLog("域名CURL失败和百度Ping失败，请检查网络.");
+                    AddErrorLog("域名CURL失败和百度Ping失败，请检查网络.");
                     return;
                 }
             }
@@ -511,7 +491,7 @@ namespace FK域名检测工具
             // STEP2: 检查匹配
             if (!string.IsNullOrEmpty(decryptedCheckPath) && !string.IsNullOrEmpty(decryptedCheckString))
             {
-                string sResult = string.Empty;
+                string sResult;
                 try
                 {
                     sResult = CommonFunc.FindString(decryptedCheckDomain + decryptedCheckPath, decryptedCheckString, timeout);
@@ -522,9 +502,9 @@ namespace FK域名检测工具
                     LogHelper.Error("checkDomain  STEP2: 检查匹配Exception",e);
                 }
 
-                if (string.Compare(sResult, "成功") != 0)
+                if (string.CompareOrdinal(sResult, "成功") != 0)
                 {
-                    addErrorLog("字符串验证失败.");
+                    AddErrorLog("字符串验证失败.");
 
                     if (!TrashDomains.IsTrashDomain(condition.Domain))
                     {
@@ -533,15 +513,11 @@ namespace FK域名检测工具
                         decryptedCheckDomain = AesHelper.AesDecrypt(condition.Domain, AesHelper.AES_KEY, AesHelper.AES_IV);
                         if (!decryptedCheckDomain.StartsWith("http://") && !decryptedCheckDomain.StartsWith("https://"))
                             decryptedCheckDomain = "https://" + decryptedCheckDomain;
-                        byte[] b = printscreen(decryptedCheckDomain);
-                        if (b == null)
-                        {
-                            b = new byte[0];
-                        }
+                        var b = PrintScreen(decryptedCheckDomain) ?? new byte[0];
                         var checkDomainResultRequest = new CheckDomainResultRequest
                         {
                             Domain = condition.Domain,
-                            CheckIP = CommonFunc.GetIPAddressAndData(true),
+                            CheckIP = CommonFunc.GetIpAddressAndData(true),
                             Creator = username,
                             ClientID = CommonFunc.GetCpuID(),
                             Product = condition.Product,
@@ -549,16 +525,14 @@ namespace FK域名检测工具
                             MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
                             Printscreen = b
                         };
-                        var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
+                        var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
                         var apiPath = "http://" + ip + "/v1/SyncCheckResult";
                         LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
                         var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
                         LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
-                        if (result is string)
-                        {
-                            LogHelper.Debug($"checkDomain {apiPath} 数据上报失败");
-                            addErrorLog("数据上报失败:" + result);
-                        }
+                        if (!(result is string)) return;
+                        LogHelper.Debug($"checkDomain {apiPath} 数据上报失败");
+                        AddErrorLog("数据上报失败:" + result);
                         return;
                     }
                 }
@@ -566,41 +540,37 @@ namespace FK域名检测工具
             LogHelper.Debug($"checkDomain STEP3: 全通过");
             // STEP3: 全通过
             {
-                if (!TrashDomains.IsTrashDomain(condition.Domain))
+                if (TrashDomains.IsTrashDomain(condition.Domain)) return;
+                LogHelper.Debug($"!TrashDomains.IsTrashDomain(condition.Domain)");
+                var request = new Request();
+                var checkDomainResultRequest = new CheckDomainResultRequest
                 {
-                    LogHelper.Debug($"!TrashDomains.IsTrashDomain(condition.Domain)");
-                    var request = new Request();
-                    var checkDomainResultRequest = new CheckDomainResultRequest
-                    {
-                        Domain = condition.Domain,
-                        CheckIP = CommonFunc.GetIPAddressAndData(true),
-                        Creator = username,
-                        ClientID = CommonFunc.GetCpuID(),
-                        Product = condition.Product,
-                        Result = "成功",
-                        MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
-                        Printscreen = new byte[0]
-                    };
-                    var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-                    var apiPath = "http://" + ip + "/v1/SyncCheckResult";
-                    LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
-                    var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
-                    LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
-                    if (result is string)
-                    {
-                        LogHelper.Debug($"checkDomain {apiPath} 数据上报失败");
-                        addErrorLog("数据上报失败:" + result);
-                    }
-                }
+                    Domain = condition.Domain,
+                    CheckIP = CommonFunc.GetIpAddressAndData(true),
+                    Creator = username,
+                    ClientID = CommonFunc.GetCpuID(),
+                    Product = condition.Product,
+                    Result = "成功",
+                    MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
+                    Printscreen = new byte[0]
+                };
+                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
+                var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
+                LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
+                if (!(result is string)) return;
+                LogHelper.Debug($"checkDomain {apiPath} 数据上报失败");
+                AddErrorLog("数据上报失败:" + result);
             }
         }
 
-        private byte[] printscreen(string url) {
-            Bitmap bitmap = WebSiteThumbnail.GetWebSiteThumbnail(url, 800, 600, 400, 300);
+        private static byte[] PrintScreen(string url) {
+            var bitmap = WebSiteThumbnail.GetWebSiteThumbnail(url, 800, 600, 400, 300);
             if (bitmap == null) {
                 return null;
             }
-            byte[] result = CommonFunc.ImageToByte(bitmap);
+            var result = CommonFunc.ImageToByte(bitmap);
             return result;
 
             /*
@@ -617,16 +587,16 @@ namespace FK域名检测工具
 
         private void button_selectAllProduct_Click(object sender, EventArgs e)
         {
-            if (string.Compare(button_selectAllProduct.Text, "全选") == 0) {
+            if (string.CompareOrdinal(button_selectAllProduct.Text, "全选") == 0) {
                 for (int i = 0; i < this.checkedListBox_product.Items.Count; i++)
                 {
                     this.checkedListBox_product.SetItemChecked(i, true);
                 }
                 this.button_selectAllProduct.Text = "取消全选";
             }
-            else if (string.Compare(button_selectAllProduct.Text, "取消全选") == 0)
+            else if (string.CompareOrdinal(button_selectAllProduct.Text, "取消全选") == 0)
             {
-                for (int i = 0; i < this.checkedListBox_product.Items.Count; i++)
+                for (var i = 0; i < this.checkedListBox_product.Items.Count; i++)
                 {
                     this.checkedListBox_product.SetItemChecked(i, false);
                 }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FK域名检测工具
 {
-    public class Curl
+    public static class Curl
     {
 
         public static bool Get(string url) {
@@ -18,17 +18,19 @@ namespace FK域名检测工具
                 //var rr = Guid.NewGuid().ToString();
                 //string tmpFile = Path.GetTempPath() + "/tmp_" + rr + ".txt";
                 LogHelper.Debug("Curl start");
-                using (Process p = new Process())
+                using (var p = new Process())
                 {
-                    p.StartInfo = new ProcessStartInfo();
-                    p.StartInfo.FileName = "curl.exe";
-                    p.StartInfo.Arguments = string.Format(" {0}", url);
-                    p.StartInfo.CreateNoWindow = true;
-                    p.StartInfo.UseShellExecute = false;
-                    p.StartInfo.RedirectStandardOutput = true;
-                    p.StartInfo.RedirectStandardError = true;
-                    p.StartInfo.RedirectStandardInput = true;
-                    p.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+                    p.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "curl.exe",
+                        Arguments = $" {url}",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        RedirectStandardInput = true,
+                        StandardOutputEncoding = Encoding.UTF8
+                    };
                     p.Start();
                     p.StandardInput.AutoFlush = true;
 
@@ -78,8 +80,8 @@ namespace FK域名检测工具
                     p.Close();
                     LogHelper.Debug("Curl p.Close()");
 
-                    System.Diagnostics.Trace.WriteLine(url);
-                    System.Diagnostics.Trace.WriteLine(ss);
+                    Trace.WriteLine(url);
+                    Trace.WriteLine(ss);
 
                     // 用windows的 curl.exe 测试就理解
                     if ((!ss.StartsWith("curl")) && (!string.IsNullOrEmpty(ss)))

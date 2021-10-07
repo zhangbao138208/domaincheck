@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace FK域名检测工具
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// 应用程序的主入口点。
@@ -18,7 +18,7 @@ namespace FK域名检测工具
             login loginForm = new login();
             if (DialogResult.OK == loginForm.ShowDialog())
             {
-                Application.Run(new main(loginForm.userName, loginForm.compantName, loginForm.customIndex));
+                Application.Run(new Main(loginForm.userName, loginForm.compantName, loginForm.customIndex));
             }
         }
     }

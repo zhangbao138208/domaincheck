@@ -1,6 +1,6 @@
 ﻿namespace FK域名检测工具
 {
-    partial class main
+    partial class Main
     {
         /// <summary>
         /// 必需的设计器变量。
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(main));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -220,7 +220,7 @@
             this.trackBar_elspTime.TabIndex = 7;
             this.trackBar_elspTime.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
             this.trackBar_elspTime.Value = 10;
-            this.trackBar_elspTime.Scroll += new System.EventHandler(this.trackBar_elspTime_Scroll);
+            this.trackBar_elspTime.Scroll += new System.EventHandler(this.trackBar_time_scroll);
             // 
             // label2
             // 
@@ -348,7 +348,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "main";
+            this.Name = "Main";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "蜂鸟域名监测客户端工具";
             this.Load += new System.EventHandler(this.main_Load);

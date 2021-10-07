@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,11 +14,11 @@ namespace FK域名检测工具
         ///<param name="str"><![CDATA[被加密字符串 ]]></param> 
         ///<param name="key"><![CDATA[密钥 ]]></param>  
         ///<returns><![CDATA[加密后字符串]]></returns>   
-        public static string Encode(string str, string key)
+        private static string Encode(string str, string key)
         {
             try
             {
-                DESCryptoServiceProvider provider = new DESCryptoServiceProvider();
+                var provider = new DESCryptoServiceProvider();
                 provider.Key = Encoding.ASCII.GetBytes(key.Substring(0, 8));
                 provider.IV = Encoding.ASCII.GetBytes(key.Substring(0, 8));
                 byte[] bytes = Encoding.GetEncoding("GB2312").GetBytes(str);
