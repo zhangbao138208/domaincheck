@@ -1,0 +1,15 @@
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\bin\Release\FK域名检测工具.exe
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\bin\Release\FK域名检测工具.pdb
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\bin\Release\Newtonsoft.Json.dll
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\bin\Release\Newtonsoft.Json.pdb
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\bin\Release\Newtonsoft.Json.xml
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名监测工具.csprojAssemblyReference.cache
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名检测工具.login.resources
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名检测工具.main.resources
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名检测工具.Properties.Resources.resources
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名监测工具.csproj.GenerateResource.cache
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名监测工具.csproj.CoreCompileInputs.cache
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名监测工具.csproj.CopyComplete
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名检测工具.exe
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release\FK域名检测工具.pdb
+D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\bin\Release\FK域名检测工具.exe.config

@@ -1,0 +1,20 @@
+<project outputDir="D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release" baseDir="D:\programProjects\FKDomainChecker\FKDomainChecker\FK域名检测工具\obj\Release" xmlns="http://confuser.codeplex.com">
+<rule pattern="true" />
+<module path="FK域名检测工具.exe">
+<rule pattern="true">
+<protection id="anti ildasm" />
+<protection id="constants" />
+<protection id="ctrl flow" />
+<protection id="ref proxy" />
+<protection id="resources" />
+<protection id = "rename" >
+<argument name = "mode" value = "decodable" />
+<argument name = "renPublic" value = "false" />
+<argument name = "renEnum" value = "false" />
+<argument name = "renameArgs" value = "false" />
+</protection >
+</rule>
+</module>
+<probePath>..\..\lib\Newtonsoft.Json.4.0.4\lib\net40</probePath>
+<probePath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0</probePath>
+</project>
