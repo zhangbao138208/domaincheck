@@ -17,7 +17,7 @@ namespace FK域名检测工具
             {
                 //var rr = Guid.NewGuid().ToString();
                 //string tmpFile = Path.GetTempPath() + "/tmp_" + rr + ".txt";
-
+                LogHelper.Debug("Curl start");
                 using (Process p = new Process())
                 {
                     p.StartInfo = new ProcessStartInfo();
@@ -64,6 +64,7 @@ namespace FK域名检测工具
 
                     while (p.StandardOutput.Peek() > -1)
                     {
+                        LogHelper.Debug("Curl p.StandardOutput.Peek() > -1");
                         output.Add(p.StandardOutput.ReadLine());
                     }
 
@@ -75,6 +76,7 @@ namespace FK域名检测工具
 
                     p.WaitForExit();
                     p.Close();
+                    LogHelper.Debug("Curl p.Close()");
 
                     System.Diagnostics.Trace.WriteLine(url);
                     System.Diagnostics.Trace.WriteLine(ss);
@@ -82,13 +84,15 @@ namespace FK域名检测工具
                     // 用windows的 curl.exe 测试就理解
                     if ((!ss.StartsWith("curl")) && (!string.IsNullOrEmpty(ss)))
                     {
+                        LogHelper.Debug("Curl (!ss.StartsWith('curl')) && (!string.IsNullOrEmpty(ss))");
                         return true;
                     }
-
+                    LogHelper.Debug("Curl return false");
                     return false;
                 }
             }
             catch (Exception e){
+                LogHelper.Error("Curl Exception",e);
                 return false;
             }
         }

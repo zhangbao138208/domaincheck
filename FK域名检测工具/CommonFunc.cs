@@ -319,6 +319,7 @@ namespace FK域名检测工具
         public static string FindString(string url, string checkstring, int timeout) {
             try
             {
+                LogHelper.Debug("FindString start");
                 string htmlStr = "";
                 if (!String.IsNullOrEmpty(url))
                 {
@@ -334,10 +335,12 @@ namespace FK域名检测工具
                     Stream datastream = response.GetResponseStream();       //创建流对象
                     Encoding ec = Encoding.UTF8;                         //可以指定网页编码方式
                     StreamReader reader = new StreamReader(datastream, ec);
+                    LogHelper.Debug("FindString ReadToEnd");
                     htmlStr = reader.ReadToEnd();                           //读取数据
                     reader.Close();
                     datastream.Close();
                     response.Close();
+                    LogHelper.Debug("FindString response.Close()");
                 }
                 bool result = (htmlStr.IndexOf(checkstring) != -1);
                 //if (!result)
@@ -346,34 +349,42 @@ namespace FK域名检测工具
                 //}
                 if (result)
                 {
+                    LogHelper.Debug("FindString 成功");
                     return "成功";
                 }
                 else {
+                    LogHelper.Debug("FindString 验证失败");
                     return "验证失败";
                 }
             }
             catch (WebException ex)
             {
+                LogHelper.Error("FindString WebException",ex);
                 if (ex.Status == WebExceptionStatus.ProtocolError &&
                     ex.Response != null)
                 {
                     var resp = (HttpWebResponse)ex.Response;
                     if (resp.StatusCode == HttpStatusCode.NotFound)
                     {
+                        LogHelper.Debug("FindString WebException 404失败");
                         return "404失败";
                     }
                     else if (resp.StatusCode == HttpStatusCode.Forbidden)
                     {
+                        LogHelper.Debug("FindString WebException 403失败");
                         return "403失败";
                     }
+                    LogHelper.Debug("FindString WebException 未知失败");
                     return "验证失败";
                 }
                 else
                 {
+                    LogHelper.Debug("FindString WebException 验证失败");
                     return "验证失败";
                 }
             }
-            catch (Exception) {
+            catch (Exception ex) {
+                LogHelper.Error("FindString Exception", ex);
                 return "验证失败";
             }
         }

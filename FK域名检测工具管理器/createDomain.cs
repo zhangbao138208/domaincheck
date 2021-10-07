@@ -131,7 +131,7 @@ namespace FK域名检测工具管理器
                     Comment = this.richTextBox_Remark.Text
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + ":80/v1/UpdateDomain";
+                var apiPath = "http://" + ip + "/v1/UpdateDomain";
                 var result = request.Execute<UpdateDomainResponse>(apiPath, updateDomainRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -151,7 +151,7 @@ namespace FK域名检测工具管理器
                     Comment = this.richTextBox_Remark.Text
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + ":80/v1/CreateDomain";
+                var apiPath = "http://" + ip + "/v1/CreateDomain";
                 var result = request.Execute<CreateDomainResponse>(apiPath, createDomainRequest.ToJson(), "POST");
                 if (result is string)
                 {

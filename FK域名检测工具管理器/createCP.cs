@@ -94,7 +94,7 @@ namespace FK域名检测工具管理器
                     Creator = this.creator
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + ":80/v1/UpdateCheckpoint";
+                var apiPath = "http://" + ip + "/v1/UpdateCheckpoint";
                 var result = request.Execute<UpdateCPResponse>(apiPath, updateCPRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -113,7 +113,7 @@ namespace FK域名检测工具管理器
                     Creator = this.creator
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + ":80/v1/CreateCheckpoint";
+                var apiPath = "http://" + ip + "/v1/CreateCheckpoint";
                 var result = request.Execute<CreateCPResponse>(apiPath, createCPRequest.ToJson(), "POST");
                 if (result is string)
                 {

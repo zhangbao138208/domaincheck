@@ -213,7 +213,7 @@ namespace FK域名检测工具管理器
                 Page = 917262936
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetPageLog";
+            var apiPath = "http://" + ip + "/v1/GetPageLog";
             var result = request.Execute<GetPageLogResponse>(apiPath, getPageLogRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -299,7 +299,7 @@ namespace FK域名检测工具管理器
                 CheckResult = comboBox_logResearchResult.Text
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetLogsCount";
+            var apiPath = "http://" + ip + "/v1/GetLogsCount";
             var result = request.Execute<GetLogCountResponse>(apiPath, getLogCountRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -351,7 +351,7 @@ namespace FK域名检测工具管理器
                 Page = g_LogCurrentPage
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetPageLog";
+            var apiPath = "http://" + ip + "/v1/GetPageLog";
             var result = request.Execute<GetPageLogResponse>(apiPath, getPageLogRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -689,7 +689,7 @@ namespace FK域名检测工具管理器
                 IsNeedCheck = isNeedCheck
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetDomainsCount";
+            var apiPath = "http://" + ip + "/v1/GetDomainsCount";
             var result = request.Execute<GetDomainCountResponse>(apiPath, getDomainCountRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -785,7 +785,7 @@ namespace FK域名检测工具管理器
                 Page = g_DomainCurrentPage
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetPageDomain";
+            var apiPath = "http://" + ip + "/v1/GetPageDomain";
             var result = request.Execute<GetPageDomainResponse>(apiPath, getPageDomainRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -821,7 +821,7 @@ namespace FK域名检测工具管理器
                 Product = this.companyName
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetCheckpointIndexs";
+            var apiPath = "http://" + ip + "/v1/GetCheckpointIndexs";
             var result = request.Execute<GetCheckpointIndexsResponse>(apiPath, getCheckpointIndexsRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -1175,7 +1175,7 @@ namespace FK域名检测工具管理器
                         DomainIndex = domainIndex
                     };
                     var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                    var apiPath = "http://" + ip + ":80/v1/DeleteDomain";
+                    var apiPath = "http://" + ip + "/v1/DeleteDomain";
                     var result = request.Execute<DeleteDomainResponse>(apiPath, deleteDomainRequest.ToJson(), "POST");
                     if (result is string)
                     {
@@ -1239,7 +1239,7 @@ namespace FK域名检测工具管理器
                     IsNeedCheck = isNeedCheck
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + ":80/v1/UpdateDomainChecked";
+                var apiPath = "http://" + ip + "/v1/UpdateDomainChecked";
                 var result = request.Execute<UpdateDomainCheckedResponse>(apiPath, updateDomainCheckedRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -1310,7 +1310,7 @@ namespace FK域名检测工具管理器
                 Creator = textBox_CPCreater.Text
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetCheckpointsCount";
+            var apiPath = "http://" + ip + "/v1/GetCheckpointsCount";
             var result = request.Execute<GetCPCountResponse>(apiPath, getCPCountRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -1369,7 +1369,7 @@ namespace FK域名检测工具管理器
                 Page = g_CPCurrentPage
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetPageCheckpoint";
+            var apiPath = "http://" + ip + "/v1/GetPageCheckpoint";
             var result = request.Execute<GetPageCPResponse>(apiPath, GetPageCPRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -1704,7 +1704,7 @@ namespace FK域名检测工具管理器
                         CheckpointIndex = checkpointIndex
                     };
                     var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                    var apiPath = "http://" + ip + ":80/v1/DeleteCheckpoint";
+                    var apiPath = "http://" + ip + "/v1/DeleteCheckpoint";
                     var result = request.Execute<DeleteCPResponse>(apiPath, deleteCPRequest.ToJson(), "POST");
                     if (result is string)
                     {
@@ -1759,7 +1759,7 @@ namespace FK域名检测工具管理器
                 Product = this.companyName
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetActiveClients";
+            var apiPath = "http://" + ip + "/v1/GetActiveClients";
             var result = request.Execute<GetActiveClientsResponse>(apiPath, getActiveClientsRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -1817,7 +1817,7 @@ namespace FK域名检测工具管理器
                 Product = this.companyName
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetIPLists";
+            var apiPath = "http://" + ip + "/v1/GetIPLists";
             var result = request.Execute<GetIPListResponse>(apiPath, getIPListRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -1958,7 +1958,7 @@ namespace FK域名检测工具管理器
                     CustomIndex = nCustomIndex
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + ":80/v1/UpdateIPList";
+                var apiPath = "http://" + ip + "/v1/UpdateIPList";
                 var result = request.Execute<UpdateIPListResponse>(apiPath, updateIPListRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -2000,7 +2000,7 @@ namespace FK域名检测工具管理器
                         Index = IPListIndex
                     };
                     var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                    var apiPath = "http://" + ip + ":80/v1/DeleteIPList";
+                    var apiPath = "http://" + ip + "/v1/DeleteIPList";
                     var result = request.Execute<DeleteIPListResponse>(apiPath, deleteIPListRequest.ToJson(), "POST");
                     if (result is string)
                     {
@@ -2064,7 +2064,7 @@ namespace FK域名检测工具管理器
                 ProductList = productList
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/DeleteAllDomains";
+            var apiPath = "http://" + ip + "/v1/DeleteAllDomains";
             var result = request.Execute<DeleteAllDomainsResponse>(apiPath, ueleteAllDomainsRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -2131,7 +2131,7 @@ namespace FK域名检测工具管理器
                 Page = 917262936
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + ":80/v1/GetPageDomain";
+            var apiPath = "http://" + ip + "/v1/GetPageDomain";
             var result = request.Execute<GetPageDomainResponse>(apiPath, getPageDomainRequest.ToJson(), "POST");
             if (result is string)
             {

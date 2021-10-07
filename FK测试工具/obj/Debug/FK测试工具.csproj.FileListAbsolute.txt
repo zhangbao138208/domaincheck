@@ -7,3 +7,12 @@ D:\programProjects\FKDomainChecker\FKDomainChecker\FK测试工具\obj\Debug\FK�
 D:\programProjects\FKDomainChecker\FKDomainChecker\FK测试工具\obj\Debug\FK测试工具.csproj.CoreCompileInputs.cache
 D:\programProjects\FKDomainChecker\FKDomainChecker\FK测试工具\obj\Debug\FK测试工具.exe
 D:\programProjects\FKDomainChecker\FKDomainChecker\FK测试工具\obj\Debug\FK测试工具.pdb
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\bin\Debug\FK测试工具.exe
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\bin\Debug\FK测试工具.pdb
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.csproj.AssemblyReference.cache
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.Form1.resources
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.Properties.Resources.resources
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.csproj.GenerateResource.cache
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.csproj.CoreCompileInputs.cache
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.exe
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK测试工具\obj\Debug\FK测试工具.pdb

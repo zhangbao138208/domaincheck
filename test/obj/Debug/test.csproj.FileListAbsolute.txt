@@ -1,0 +1,11 @@
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\obj\Debug\test.csproj.AssemblyReference.cache
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\obj\Debug\test.csproj.CoreCompileInputs.cache
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\bin\Debug\test.exe.config
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\bin\Debug\test.exe
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\bin\Debug\test.pdb
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\obj\Debug\test.exe
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\obj\Debug\test.pdb
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\bin\Debug\log4net.config
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\bin\Debug\log4net.dll
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\bin\Debug\log4net.xml
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\test\obj\Debug\test.csproj.CopyComplete

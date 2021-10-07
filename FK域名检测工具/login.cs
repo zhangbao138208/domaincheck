@@ -147,7 +147,7 @@ namespace FK域名检测工具
                 IsManager = "0" 
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-            var apiPath = "http://" + ip + ":80/v1/Login";
+            var apiPath = "http://" + ip + "/v1/Login";
             var result = request.Execute<LoginResponse>(apiPath, loginRequest.ToJson(), "POST");
             if (result is string)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -24,6 +25,8 @@ namespace FK域名检测工具
         private string userName = "";
         private string companyName = "";
         private int customIndex = 0;
+
+       
         public main(string userName, string companyName, int customIndex)
         {
             InitializeComponent();
@@ -157,12 +160,14 @@ namespace FK域名检测工具
             object[] paramList = (object[])param;
             int timeout = (int)paramList[0];
             string username = (string)paramList[1];
+            LogHelper.Debug("循环开始前");
             for (; ;)
             {
                 Thread.Sleep(100);
-
+                LogHelper.Debug("sleep 100ms");
                 if (cs.Token.IsCancellationRequested)
                 {
+                    LogHelper.Debug("IsCancellationRequested break");
                     break;
                 }
 
@@ -170,18 +175,22 @@ namespace FK域名检测工具
                 {
                     if (needCheckedDomainList.Count <= 0)
                     {
+                        LogHelper.Debug("needCheckedDomainList.Count <= 0");
                         if (!requestDomain(needCheckedDomainList))
                         {
                             // 请求失败
+                            LogHelper.Debug("请求失败 continue");
                             continue;
-                        }
+                         }
                         else
                         {
                             // 请求成功
+                            LogHelper.Debug("请求成功");
                         }
                     }
                     else
                     {
+                        LogHelper.Debug("checkDomain");
                         checkDomain(needCheckedDomainList, ref checkedDomainCount, ref checkFailedDomainCount, timeout, username);
                     }
                 }
@@ -229,6 +238,7 @@ namespace FK域名检测工具
             this.richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
         }
         private void addLog(string s) {
+            LogHelper.Debug(s);
             if (this.richTextBox_log.InvokeRequired)
             {
                 setRichTexBox fc = new setRichTexBox(Set);
@@ -238,11 +248,13 @@ namespace FK域名检测工具
             {
                 this.richTextBox_log.SelectionColor = Color.Gray;
                 richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
+                
             }
         }
 
         private void addNoticeLog(string s)
         {
+            LogHelper.Info(s);
             if (this.richTextBox_log.InvokeRequired)
             {
                 setRichTexBox fc = new setRichTexBox(Set);
@@ -252,11 +264,13 @@ namespace FK域名检测工具
             {
                 this.richTextBox_log.SelectionColor = Color.Green;
                 richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
+                
             }
         }
 
         private void addErrorLog(string s)
         {
+            LogHelper.Error(s);
             if (this.richTextBox_log.InvokeRequired)
             {
                 setRichTexBox fc = new setRichTexBox(Set);
@@ -266,6 +280,7 @@ namespace FK域名检测工具
             {
                 this.richTextBox_log.SelectionColor = Color.Red;
                 richTextBox_log.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss  -  ") + s + "\n");
+               
             }
         }
 
@@ -281,6 +296,7 @@ namespace FK域名检测工具
                 }
             }
             */
+            LogHelper.Debug("requestDomain start");
             if (string.Compare("全部", this.companyName) != 0)
             {
                 strList.Add(this.companyName);
@@ -297,6 +313,7 @@ namespace FK域名检测工具
             }
 
             if (strList.Count <= 0) {
+                LogHelper.Debug("strList.Count <= 0");
                 addErrorLog("请先选择至少一个部门.");
                 return false;
             }
@@ -309,10 +326,10 @@ namespace FK域名检测工具
                 MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV)
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-            var apiPath = "http://" + ip + ":80/v1/GetDomain";
+            var apiPath = "http://" + ip + "/v1/GetDomain";
             object re = request.Execute<GetDomainResponse>(apiPath,
                 getDomainRequest.ToJson(), "POST");
-
+            LogHelper.Debug("requestDomain请求返回");
             //addLog(getDomainRequest.ToJson());
 
             if (re is string)
@@ -322,11 +339,13 @@ namespace FK域名检测工具
             }
             else
             {
+                LogHelper.Debug("requestDomain re is not string");
                 var getDomainResponse = (GetDomainResponse)re;
                 //var getDomainResponse = (GetDomainResponse)request.Execute<GetDomainResponse>(apiPath, 
                 //    getDomainRequest.ToJson(), "POST");
                 if (string.IsNullOrEmpty(getDomainResponse.Error))
                 {
+                    LogHelper.Debug("requestDomain re is error");
                     if (getDomainResponse.DomainCheckConditions == null)
                     {
                         addErrorLog("从服务器请求新域名失败...");
@@ -340,6 +359,7 @@ namespace FK域名检测工具
                         // 垃圾域名
                         tobeCheckedDomainList.Add(TrashDomains.GetRadomTrashDomainCheckCondition());
                     }
+                    LogHelper.Debug("requestDomain is ok");
                     return true;
                 }
                 else
@@ -354,7 +374,9 @@ namespace FK域名检测工具
         private void checkDomain(List<DomainCheckCondition> tobeCheckedDomainList, 
             ref int checkedDomainCount,ref int checkFailedDomainCount, int timeout, string username) 
         {
+            LogHelper.Debug("checkDomain start");
             if (tobeCheckedDomainList.Count() <= 0) {
+                LogHelper.Debug("checkDomain tobeCheckedDomainList.Count() <= 0");
                 return;
             }
             checkedDomainCount++;
@@ -364,6 +386,7 @@ namespace FK域名检测工具
             tobeCheckedDomainList.RemoveAt(0);
             if (condition == null)
             {
+                LogHelper.Debug("checkDomain condition == null");
                 return;
             }
 
@@ -379,6 +402,8 @@ namespace FK域名检测工具
             if (!decryptedCheckPath.StartsWith("/"))
                 decryptedCheckPath = "/" + decryptedCheckPath;
 
+
+            LogHelper.Debug("checkDomain STEP1：PING");
             // STEP1：PING
             bool isCurlSuccess = false;
             bool isPingBaiduSuccess = false;
@@ -407,12 +432,14 @@ namespace FK域名检测工具
                 isCurlSuccess = Curl.Get(decryptedCheckDomain);
 
             }
-            catch (Exception) {
+            catch (Exception e) {
+                LogHelper.Error("checkDomain STEP1：PING Exception",e);
                 isCurlSuccess = false;
             }
 
             // 通过百度进行二次复检
             if (!isCurlSuccess) {
+                LogHelper.Debug("checkDomain !isCurlSuccess");
                 try
                 {
                     Ping p2 = new Ping();
@@ -422,21 +449,25 @@ namespace FK域名检测工具
                     {
                         // 成功
                         isPingBaiduSuccess = true;
+                        LogHelper.Debug("checkDomain isPingBaiduSuccess 成功");
                     }
                     else if (reply2.Status == IPStatus.TimedOut)
                     {
                         // 超时
                         isPingBaiduSuccess = false;
+                        LogHelper.Debug("checkDomain isPingBaiduSuccess 超时");
                     }
                     else
                     {
                         // 失败
                         isPingBaiduSuccess = false;
+                        LogHelper.Debug("checkDomain isPingBaiduSuccess 失败");
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     isPingBaiduSuccess = false;
+                    LogHelper.Error("checkDomain isPingBaiduSuccess Exception", e);
                 }
             }
 
@@ -459,8 +490,10 @@ namespace FK域名检测工具
                             Printscreen = new byte[0]
                         };
                         var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-                        var apiPath = "http://" + ip + ":80/v1/SyncCheckResult";
+                        var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                        LogHelper.Debug("checkDomain CURL失败数据上报开始");
                         var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
+                        LogHelper.Debug("checkDomain CURL失败数据上报结束");
                         if (result is string)
                         {
                             addErrorLog("数据上报失败:" + result);
@@ -474,7 +507,7 @@ namespace FK域名检测工具
                     return;
                 }
             }
-
+            LogHelper.Debug("checkDomain  STEP2: 检查匹配");
             // STEP2: 检查匹配
             if (!string.IsNullOrEmpty(decryptedCheckPath) && !string.IsNullOrEmpty(decryptedCheckString))
             {
@@ -483,9 +516,10 @@ namespace FK域名检测工具
                 {
                     sResult = CommonFunc.FindString(decryptedCheckDomain + decryptedCheckPath, decryptedCheckString, timeout);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     sResult = "验证失败";
+                    LogHelper.Error("checkDomain  STEP2: 检查匹配Exception",e);
                 }
 
                 if (string.Compare(sResult, "成功") != 0)
@@ -516,21 +550,25 @@ namespace FK域名检测工具
                             Printscreen = b
                         };
                         var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-                        var apiPath = "http://" + ip + ":80/v1/SyncCheckResult";
+                        var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                        LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
                         var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
+                        LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
                         if (result is string)
                         {
+                            LogHelper.Debug($"checkDomain {apiPath} 数据上报失败");
                             addErrorLog("数据上报失败:" + result);
                         }
                         return;
                     }
                 }
             }
-
+            LogHelper.Debug($"checkDomain STEP3: 全通过");
             // STEP3: 全通过
             {
                 if (!TrashDomains.IsTrashDomain(condition.Domain))
                 {
+                    LogHelper.Debug($"!TrashDomains.IsTrashDomain(condition.Domain)");
                     var request = new Request();
                     var checkDomainResultRequest = new CheckDomainResultRequest
                     {
@@ -544,10 +582,13 @@ namespace FK域名检测工具
                         Printscreen = new byte[0]
                     };
                     var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-                    var apiPath = "http://" + ip + ":80/v1/SyncCheckResult";
+                    var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                    LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
                     var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
+                    LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
                     if (result is string)
                     {
+                        LogHelper.Debug($"checkDomain {apiPath} 数据上报失败");
                         addErrorLog("数据上报失败:" + result);
                     }
                 }
