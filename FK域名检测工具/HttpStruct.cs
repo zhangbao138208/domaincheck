@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace FK域名检测工具
 {
@@ -15,7 +11,7 @@ namespace FK域名检测工具
         [JsonProperty("is_manager")]
         public string IsManager { get; set; }
         [JsonProperty("mac")]
-        public string MAC { get; set; }
+        public string Mac { get; set; }
 
         public string ToJson() {
             return JsonConvert.SerializeObject(this);
@@ -41,7 +37,7 @@ namespace FK域名检测工具
         [JsonProperty("products")]
         public string[] Products { get; set; }
         [JsonProperty("token")]
-        public string MAC { get; set; }
+        public string Mac { get; set; }
         [JsonProperty("custom_index")]
         public int CustomIndex { get; set; }
         public string ToJson()
@@ -77,17 +73,17 @@ namespace FK域名检测工具
         [JsonProperty("domain")]
         public string Domain;
         [JsonProperty("check_ip")]
-        public string CheckIP;
+        public string CheckIp;
         [JsonProperty("creator")]
         public string Creator;
         [JsonProperty("client_id")]
-        public string ClientID;
+        public string ClientId;
         [JsonProperty("product")]
         public string Product;
         [JsonProperty("result")]
         public string Result;
         [JsonProperty("token")]
-        public string MAC;
+        public string Mac;
         [JsonProperty("printscreen")]
         public byte[] Printscreen;
 

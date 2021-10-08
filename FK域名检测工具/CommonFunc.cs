@@ -14,29 +14,21 @@ namespace FK域名检测工具
 {
     public static class CommonFunc
     {
-        public static string GetIPAddress2()
+        public static string GetIpAddress2()
         {
-            System.Web.HttpContext context = System.Web.HttpContext.Current;
-            string ipAddress = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            var context = System.Web.HttpContext.Current;
+            var ipAddress = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
-            if (!string.IsNullOrEmpty(ipAddress))
-            {
-                string[] addresses = ipAddress.Split(',');
-                if (addresses.Length != 0)
-                {
-                    return addresses[0];
-                }
-            }
-
-            return context.Request.ServerVariables["REMOTE_ADDR"];
+            if (string.IsNullOrEmpty(ipAddress)) return context.Request.ServerVariables["REMOTE_ADDR"];
+            var addresses = ipAddress.Split(',');
+            return addresses.Length != 0 ? addresses[0] : context.Request.ServerVariables["REMOTE_ADDR"];
         }
 
         private static string GetIpData(string token, string ip = null, string datatype = "txt")
         {
             try
             {
-                var url = "";
-                url = string.IsNullOrEmpty(ip) ? $"https://api.ip138.com/ip/?datatype={datatype}&token={token}" : $"https://api.ip138.com/ip/?ip={ip}&datatype={datatype}&token={token}";
+                var url = string.IsNullOrEmpty(ip) ? $"https://api.ip138.com/ip/?datatype={datatype}&token={token}" : $"https://api.ip138.com/ip/?ip={ip}&datatype={datatype}&token={token}";
                 using (var client = new WebClient())
                 {
                     client.Encoding = Encoding.UTF8;
@@ -52,7 +44,7 @@ namespace FK域名检测工具
         {
             try
             {
-                var ip = "";
+                string ip;
                 if (isMustCertain)
                 {
                     var data = GetIpData("415dcc20101f2dc52506d14c17c4aa6c");
@@ -67,39 +59,37 @@ namespace FK域名检测工具
 
                     //var t0_html = HttpGetPageHtml("https://www.ip.cn", "utf-8");
                     //var t1_html = HttpGetPageHtml("http://www.ip138.com/ips138.asp", "gbk");
-                    var t2_html = HttpGetPageHtml("http://www.net.cn/static/customercare/yourip.asp", "gbk");
+                    var t2Html = HttpGetPageHtml("http://www.net.cn/static/customercare/yourip.asp", "gbk");
                     //var t0_ip = GetIPFromHtml(t0_html);
                     //var t1_ip = GetIPFromHtml(t1_html);
-                    var t2_ip = GetIPFromHtml(t2_html);
+                    var t2Ip = GetIpFromHtml(t2Html);
 
-                    ip = t2_ip;
+                    ip = t2Ip;
                     if (string.IsNullOrEmpty(ip))
                     {
-                        ip = GetUncertainIPAddress();
+                        ip = GetUncertainIpAddress();
                     }
 
-                    if (IsIPAddress(ip))
+                    if (IsIpAddress(ip))
                     {
-                        string data2 = GetIpData("415dcc20101f2dc52506d14c17c4aa6c", ip);
+                        var data2 = GetIpData("415dcc20101f2dc52506d14c17c4aa6c", ip);
                         if (string.IsNullOrEmpty(data2))
                         {
                             return ip;
                         }
-                        else
-                        {
-                            data2 = data2.Replace(" ", "_");
-                            data2 = data2.Replace("\t", "_");
-                            data2 = data2.Replace("\n", "_");
-                            System.Diagnostics.Debug.WriteLine("IP数据=" + data2);
-                            return data2;
-                        }
+
+                        data2 = data2.Replace(" ", "_");
+                        data2 = data2.Replace("\t", "_");
+                        data2 = data2.Replace("\n", "_");
+                        System.Diagnostics.Debug.WriteLine("IP数据=" + data2);
+                        return data2;
                     }
                 }
                 else
                 {
-                    ip = GetUncertainIPAddress();
+                    ip = GetUncertainIpAddress();
 
-                    if (IsIPAddress(ip))
+                    if (IsIpAddress(ip))
                     {
                         return ip;
                     }
@@ -112,17 +102,17 @@ namespace FK域名检测工具
             return "";
         }
 
-        public static string HttpGetPageHtml(string url, string encoding)
+        private static string HttpGetPageHtml(string url, string encoding)
         {
-            string pageHtml = string.Empty;
+            string pageHtml;
             try
             {
-                using (WebClient MyWebClient = new WebClient())
+                using (var myWebClient = new WebClient())
                 {
-                    Encoding encode = Encoding.GetEncoding(encoding);
-                    MyWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.84 Safari/537.36");
-                    MyWebClient.Credentials = CredentialCache.DefaultCredentials;//获取或设置用于向Internet资源的请求进行身份验证的网络凭据
-                    Byte[] pageData = MyWebClient.DownloadData(url); //从指定网站下载数据
+                    var encode = Encoding.GetEncoding(encoding);
+                    myWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.84 Safari/537.36");
+                    myWebClient.Credentials = CredentialCache.DefaultCredentials;//获取或设置用于向Internet资源的请求进行身份验证的网络凭据
+                    var pageData = myWebClient.DownloadData(url); //从指定网站下载数据
                     pageHtml = encode.GetString(pageData);
                 }
             }
@@ -137,12 +127,12 @@ namespace FK域名检测工具
         /// </summary>
         /// <param name="pageHtml"></param>
         /// <returns></returns>
-        public static string GetIPFromHtml(String pageHtml)
+        private static string GetIpFromHtml(String pageHtml)
         {
             //验证ipv4地址
-            string reg = @"(?:(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))\.){3}(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))";
-            string ip = "";
-            Match m = Regex.Match(pageHtml, reg);
+            const string reg = @"(?:(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))\.){3}(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))";
+            var ip = "";
+            var m = Regex.Match(pageHtml, reg);
             if (m.Success)
             {
                 ip = m.Value;
@@ -154,20 +144,20 @@ namespace FK域名检测工具
         /// 获取CpuID  
         /// </summary>  
         /// <returns>CpuID</returns>  
-        public static string GetCpuID()
+        public static string GetCpuId()
         {
             try
             {
-                string strCpuID = string.Empty;
-                ManagementClass mc = new ManagementClass("Win32_Processor");
-                ManagementObjectCollection moc = mc.GetInstances();
-                foreach (ManagementObject mo in moc)
+                var strCpuId = string.Empty;
+                var mc = new ManagementClass("Win32_Processor");
+                var moc = mc.GetInstances();
+                foreach (var o in moc)
                 {
-                    strCpuID = mo.Properties["ProcessorId"].Value.ToString();
+                    var mo = (ManagementObject) o;
+                    strCpuId = mo.Properties["ProcessorId"].Value.ToString();
                 }
-                moc = null;
-                mc = null;
-                return strCpuID;
+
+                return strCpuId;
             }
             catch
             {
@@ -175,28 +165,24 @@ namespace FK域名检测工具
             }
         }
 
-        public static string GetMAC() {
-            string s1 = GetMacAddress1();
+        public static string GetMac() {
+            var s1 = GetMacAddress1();
             if (! string.IsNullOrEmpty(s1)) {
                 return s1;
             }
-            string s2 = GetMacAddress2();
-            if (!string.IsNullOrEmpty(s2))
-            {
-                return s2;
-            }
-            return "00-00-00-00-00-00";
+            var s2 = GetMacAddress2();
+            return !string.IsNullOrEmpty(s2) ? s2 : "00-00-00-00-00-00";
         }
 
-        public static string GetMacAddress2() {
+        private static string GetMacAddress2() {
             try
             {
-                const int MIN_MAC_ADDR_LENGTH = 12;
-                long maxSpeed = -1;
-                foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+                const int minMacAdderLength = 12;
+                const long maxSpeed = -1;
+                foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
                 {
-                    string tmpMac = nic.GetPhysicalAddress().ToString();
-                    if (nic.Speed > maxSpeed && !string.IsNullOrEmpty(tmpMac) && tmpMac.Length >= MIN_MAC_ADDR_LENGTH)
+                    var tmpMac = nic.GetPhysicalAddress().ToString();
+                    if (nic.Speed > maxSpeed && !string.IsNullOrEmpty(tmpMac) && tmpMac.Length >= minMacAdderLength)
                     {
                         return BitConverter.ToString(nic.GetPhysicalAddress().GetAddressBytes());
                     }
@@ -207,23 +193,24 @@ namespace FK域名检测工具
         }
 
 
-        public static string GetMacAddress1()
+        private static string GetMacAddress1()
         {
             try
             {
-                 string madAddr = "";
-                 ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
-                 ManagementObjectCollection moc2 = mc.GetInstances();
-                 foreach (ManagementObject mo in moc2)
+                 var madAdder = "";
+                 var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+                 var moc2 = mc.GetInstances();
+                 foreach (var o in moc2)
                  {
-                     if (Convert.ToBoolean(mo["IPEnabled"]) == true)
+                     var mo = (ManagementObject) o;
+                     if (Convert.ToBoolean(mo["IPEnabled"]))
                      {
-                         madAddr = mo["MacAddress"].ToString();
-                         madAddr = madAddr.Replace(':', '-');
+                         madAdder = mo["MacAddress"].ToString();
+                         madAdder = madAdder.Replace(':', '-');
                      }
                      mo.Dispose();
                  }
-                 return madAddr;
+                 return madAdder;
             }
             catch
             {
@@ -232,19 +219,20 @@ namespace FK域名检测工具
         }
 
 
-        public static string GetIP138Address() {
+        public static string GetIp138Address() {
             try
             {
                 
-                string strUrl = "https://ipchaxun.com/";
-                Uri uri = new Uri(strUrl);
-                WebRequest wr = WebRequest.Create(uri);
-                Stream s = wr.GetResponse().GetResponseStream();
-                StreamReader sr = new StreamReader(s, Encoding.Default);
-                string all = sr.ReadToEnd();
-                string ip = Regex.Match(all, @"(\d+\.\d+\.\d+\.\d+)").Groups[0].Value.ToString();
+                const string strUrl = "https://ipchaxun.com/";
+                var uri = new Uri(strUrl);
+                var wr = WebRequest.Create(uri);
+                var s = wr.GetResponse().GetResponseStream();
+                if (s == null) return "";
+                var sr = new StreamReader(s, Encoding.Default);
+                var all = sr.ReadToEnd();
+                var ip = Regex.Match(all, @"(\d+\.\d+\.\d+\.\d+)").Groups[0].Value;
                 return ip;
-                
+
                 /*
                 string strUrl = "http://www.ip138.com/ip2city.asp";
                 Uri uri = new Uri(strUrl);
@@ -265,33 +253,25 @@ namespace FK域名检测工具
         }
 
         //是否ip格式
-        public static bool IsIPAddress(string str1)
+        private static bool IsIpAddress(string str1)
         {
-            IPAddress ip;
-            if (IPAddress.TryParse(str1, out ip))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return IPAddress.TryParse(str1, out _);
         }
 
-        public static string GetUncertainIPAddress() {
+        private static string GetUncertainIpAddress() {
             try
             {
                 //获取主机名
-                string HostName = Dns.GetHostName();
-                IPHostEntry IpEntry = Dns.GetHostEntry(HostName);
-                for (int i = 0; i < IpEntry.AddressList.Length; i++)
+                var hostName = Dns.GetHostName();
+                var ipEntry = Dns.GetHostEntry(hostName);
+                foreach (var t in ipEntry.AddressList)
                 {
                     //从IP地址列表中筛选出IPv4类型的IP地址
                     //AddressFamily.InterNetwork表示此IP为IPv4,
                     //AddressFamily.InterNetworkV6表示此地址为IPv6类型
-                    if (IpEntry.AddressList[i].AddressFamily == AddressFamily.InterNetwork)
+                    if (t.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        return IpEntry.AddressList[i].ToString();
+                        return t.ToString();
                     }
                 }
                 return "";
@@ -302,33 +282,37 @@ namespace FK域名检测工具
             }
         }
 
-        public static string FindString(string url, string checkstring, int timeout) {
+        public static string FindString(string url, string checkString, int timeout) {
             try
             {
                 LogHelper.Debug("FindString start");
-                string htmlStr = "";
-                if (!String.IsNullOrEmpty(url))
+                var htmlStr = "";
+                if (!string.IsNullOrEmpty(url))
                 {
-                    Uri httpURL = new Uri(url);
-                    ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(httpURL);        //实例化WebRequest对象
+                    var httpUrl = new Uri(url);
+                    ServicePointManager.ServerCertificateValidationCallback = CheckValidationResult;
+                    var request = (HttpWebRequest)WebRequest.Create(httpUrl);        //实例化WebRequest对象
                     request.Method = "GET";
                     request.Headers.Add("Accept-Language", "zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3");
                     request.UserAgent = "Mozilla/5.0 (Windows NT 5.2; rv:12.0) Gecko/20100101 Firefox/12.0";
                     request.CookieContainer = new CookieContainer();
                     request.Timeout = timeout;
-                    WebResponse response = request.GetResponse();           //创建WebResponse对象
-                    Stream datastream = response.GetResponseStream();       //创建流对象
-                    Encoding ec = Encoding.UTF8;                         //可以指定网页编码方式
-                    StreamReader reader = new StreamReader(datastream, ec);
-                    LogHelper.Debug("FindString ReadToEnd");
-                    htmlStr = reader.ReadToEnd();                           //读取数据
-                    reader.Close();
-                    datastream.Close();
+                    var response = request.GetResponse();           //创建WebResponse对象
+                    var dataStream = response.GetResponseStream();       //创建流对象
+                    var ec = Encoding.UTF8;                         //可以指定网页编码方式
+                    if (dataStream != null)
+                    {
+                        var reader = new StreamReader(dataStream, ec);
+                        LogHelper.Debug("FindString ReadToEnd");
+                        htmlStr = reader.ReadToEnd();                           //读取数据
+                        reader.Close();
+                    }
+
+                    dataStream?.Close();
                     response.Close();
                     LogHelper.Debug("FindString response.Close()");
                 }
-                bool result = (htmlStr.IndexOf(checkstring) != -1);
+                var result = (htmlStr.IndexOf(checkString, StringComparison.Ordinal) != -1);
                 //if (!result)
                 //{
                 //    MessageBox.Show(htmlStr, checkstring);
@@ -338,10 +322,9 @@ namespace FK域名检测工具
                     LogHelper.Debug("FindString 成功");
                     return "成功";
                 }
-                else {
-                    LogHelper.Debug("FindString 验证失败");
-                    return "验证失败";
-                }
+
+                LogHelper.Debug("FindString 验证失败");
+                return "验证失败";
             }
             catch (WebException ex)
             {
@@ -350,24 +333,22 @@ namespace FK域名检测工具
                     ex.Response != null)
                 {
                     var resp = (HttpWebResponse)ex.Response;
-                    if (resp.StatusCode == HttpStatusCode.NotFound)
+                    switch (resp.StatusCode)
                     {
-                        LogHelper.Debug("FindString WebException 404失败");
-                        return "404失败";
+                        case HttpStatusCode.NotFound:
+                            LogHelper.Debug("FindString WebException 404失败");
+                            return "404失败";
+                        case HttpStatusCode.Forbidden:
+                            LogHelper.Debug("FindString WebException 403失败");
+                            return "403失败";
+                        default:
+                            LogHelper.Debug("FindString WebException 未知失败");
+                            return "验证失败";
                     }
-                    else if (resp.StatusCode == HttpStatusCode.Forbidden)
-                    {
-                        LogHelper.Debug("FindString WebException 403失败");
-                        return "403失败";
-                    }
-                    LogHelper.Debug("FindString WebException 未知失败");
-                    return "验证失败";
                 }
-                else
-                {
-                    LogHelper.Debug("FindString WebException 验证失败");
-                    return "验证失败";
-                }
+
+                LogHelper.Debug("FindString WebException 验证失败");
+                return "验证失败";
             }
             catch (Exception ex) {
                 LogHelper.Error("FindString Exception", ex);
@@ -375,14 +356,14 @@ namespace FK域名检测工具
             }
         }
 
-        public static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {  // 总是接受  
             return true;
         }
 
         public static byte[] ImageToByte(Image img)
         {
-            ImageConverter converter = new ImageConverter();
+            var converter = new ImageConverter();
             return (byte[])converter.ConvertTo(img, typeof(byte[]));
         }
 
@@ -404,37 +385,41 @@ namespace FK域名检测工具
         }
 
         public static string FakeProductToRealProduct(string fake) {
-            if (string.Compare(fake, "BTT") == 0) {
+            if (string.CompareOrdinal(fake, "BTT") == 0) {
                 return "A01";
-            } else if (string.Compare(fake, "AA") == 0)
+            }
+
+            if (string.CompareOrdinal(fake, "AA") == 0)
             {
                 return "A02";
             }
-            else if (string.Compare(fake, "BY") == 0)
+
+            if (string.CompareOrdinal(fake, "BY") == 0)
             {
                 return "A03";
             }
-            else if (string.Compare(fake, "ZZ") == 0)
+
+            if (string.CompareOrdinal(fake, "ZZ") == 0)
             {
                 return "A04";
             }
-            else if (string.Compare(fake, "CC") == 0)
+
+            if (string.CompareOrdinal(fake, "CC") == 0)
             {
                 return "A05";
             }
-            else if (string.Compare(fake, "KK") == 0)
+
+            if (string.CompareOrdinal(fake, "KK") == 0)
             {
                 return "A06";
             }
-            else if (string.Compare(fake, "BB") == 0)
+
+            if (string.CompareOrdinal(fake, "BB") == 0)
             {
                 return "B01";
             }
-            else if (string.Compare(fake, "YM") == 0)
-            {
-                return "C01";
-            }
-            return "Unknown";
+
+            return string.CompareOrdinal(fake, "YM") == 0 ? "C01" : "Unknown";
         }
     }
 }

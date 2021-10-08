@@ -26,7 +26,7 @@ namespace FK域名检测工具
             textBox_password.UseSystemPasswordChar = false;
             textBox_password.Text = "请输入密码";
 
-            label_MAC.Text = CommonFunc.GetMAC();
+            label_MAC.Text = CommonFunc.GetMac();
 
             // 加载保存的账密
             loadAccountInfo();
@@ -143,7 +143,7 @@ namespace FK域名检测工具
             var loginRequest = new LoginRequest { 
                 UserName = textBox_account.Text, 
                 Password = AesHelper.AesEncrypt(textBox_password.Text, AesHelper.AES_KEY, AesHelper.AES_IV),
-                MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
+                Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                 IsManager = "0" 
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);

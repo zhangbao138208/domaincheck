@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TimeoutException = System.TimeoutException;
 
 namespace test
 {
@@ -15,8 +17,16 @@ namespace test
         static void Main(string[] args)
         {
 
-            LogHelper.Info("info");
-            LogHelper.Error("err",null);
+            // LogHelper.Info("info");
+            // LogHelper.Error("err",null);
+            int ret = 1;
+            Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(1000*6);
+                 ret = 2;
+                
+            }).Wait(5*1000);
+            LogHelper.Info(ret.ToString());
         }
 
         public static bool ExistsOnPath(string fileName)

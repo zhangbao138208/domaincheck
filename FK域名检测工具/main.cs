@@ -36,7 +36,7 @@ namespace FK域名检测工具
         {
             this.label_company.Text = this._companyName;
             this.label_account.Text = this._userName;
-            this.label_mac.Text = CommonFunc.GetMAC();
+            this.label_mac.Text = CommonFunc.GetMac();
 
             this.richTextBox_updatelog.Text = @"
 服务器版本查看接口为  域名/health (例如打开浏览器，输入 http://goapi.xxoo.com/health)
@@ -304,7 +304,7 @@ namespace FK域名检测工具
             var getDomainRequest = new GetDomainRequest { 
                 Products = strList.ToArray(),
                 CustomIndex = this._customIndex,
-                MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV)
+                Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV)
             };
             var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
             var apiPath = "http://" + ip + "/v1/GetDomain";
@@ -338,7 +338,7 @@ namespace FK域名检测工具
                         tobeCheckedDomainList.Add(getDomainResponse.DomainCheckConditions[i]);
 
                         // 垃圾域名
-                        tobeCheckedDomainList.Add(TrashDomains.GetRadomTrashDomainCheckCondition());
+                        tobeCheckedDomainList.Add(TrashDomains.GetRandomTrashDomainCheckCondition());
                     }
                     LogHelper.Debug("requestDomain is ok");
                     return true;
@@ -461,12 +461,12 @@ namespace FK域名检测工具
                         var checkDomainResultRequest = new CheckDomainResultRequest
                         {
                             Domain = condition.Domain,
-                            CheckIP = CommonFunc.GetIpAddressAndData(true),
+                            CheckIp = CommonFunc.GetIpAddressAndData(true),
                             Creator = username,
-                            ClientID = CommonFunc.GetCpuID(),
+                            ClientId = CommonFunc.GetCpuId(),
                             Product = condition.Product,
                             Result = "CURL失败",
-                            MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
+                            Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                             Printscreen = new byte[0]
                         };
                         var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
@@ -517,12 +517,12 @@ namespace FK域名检测工具
                         var checkDomainResultRequest = new CheckDomainResultRequest
                         {
                             Domain = condition.Domain,
-                            CheckIP = CommonFunc.GetIpAddressAndData(true),
+                            CheckIp = CommonFunc.GetIpAddressAndData(true),
                             Creator = username,
-                            ClientID = CommonFunc.GetCpuID(),
+                            ClientId = CommonFunc.GetCpuId(),
                             Product = condition.Product,
                             Result = sResult,
-                            MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
+                            Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                             Printscreen = b
                         };
                         var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
@@ -546,12 +546,12 @@ namespace FK域名检测工具
                 var checkDomainResultRequest = new CheckDomainResultRequest
                 {
                     Domain = condition.Domain,
-                    CheckIP = CommonFunc.GetIpAddressAndData(true),
+                    CheckIp = CommonFunc.GetIpAddressAndData(true),
                     Creator = username,
-                    ClientID = CommonFunc.GetCpuID(),
+                    ClientId = CommonFunc.GetCpuId(),
                     Product = condition.Product,
                     Result = "成功",
-                    MAC = AesHelper.AesEncrypt(CommonFunc.GetMAC(), AesHelper.AES_KEY, AesHelper.AES_IV),
+                    Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                     Printscreen = new byte[0]
                 };
                 var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
@@ -588,7 +588,7 @@ namespace FK域名检测工具
         private void button_selectAllProduct_Click(object sender, EventArgs e)
         {
             if (string.CompareOrdinal(button_selectAllProduct.Text, "全选") == 0) {
-                for (int i = 0; i < this.checkedListBox_product.Items.Count; i++)
+                for (var i = 0; i < checkedListBox_product.Items.Count; i++)
                 {
                     this.checkedListBox_product.SetItemChecked(i, true);
                 }

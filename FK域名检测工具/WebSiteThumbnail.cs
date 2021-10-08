@@ -1,112 +1,111 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace FK域名检测工具
 {
     public class WebSiteThumbnail
     {
-        Bitmap m_Bitmap;
-        string m_Url;
-        int m_BrowserWidth, m_BrowserHeight, m_ThumbnailWidth, m_ThumbnailHeight;
+        private Bitmap _mBitmap;
+        private readonly string _mUrl;
+        private readonly int _mBrowserWidth;
+
+        private readonly int _mBrowserHeight;
+        private readonly int _mThumbnailWidth;
+        private readonly int _mThumbnailHeight;
+
         // ADDED
-        public string LastUrl
-        {
-            get{return _LastUrl;}
-            set{_LastUrl = value;}
-        }
-        private string _LastUrl;
+        private string LastUrl { get; set; }
+
         // END OF ADD
 
-        public WebSiteThumbnail(string Url, int BrowserWidth, int BrowserHeight, int ThumbnailWidth, int ThumbnailHeight)
+        private WebSiteThumbnail(string url, int browserWidth, int browserHeight, int thumbnailWidth, int thumbnailHeight)
         {
-            m_Url = Url;
-            m_BrowserHeight = BrowserHeight;
-            m_BrowserWidth = BrowserWidth;
-            m_ThumbnailWidth = ThumbnailWidth;
-            m_ThumbnailHeight = ThumbnailHeight;
+            _mUrl = url;
+            _mBrowserHeight = browserHeight;
+            _mBrowserWidth = browserWidth;
+            _mThumbnailWidth = thumbnailWidth;
+            _mThumbnailHeight = thumbnailHeight;
         }
-        public static Bitmap GetWebSiteThumbnail(string Url, int BrowserWidth, int BrowserHeight, int ThumbnailWidth, int ThumbnailHeight)
+        public static Bitmap GetWebSiteThumbnail(string url, int browserWidth, int browserHeight, int thumbnailWidth, int thumbnailHeight)
         {
-            WebSiteThumbnail thumbnailGenerator = new WebSiteThumbnail(Url, BrowserWidth, BrowserHeight, ThumbnailWidth, ThumbnailHeight);
+            var thumbnailGenerator = new WebSiteThumbnail(url, browserWidth, browserHeight, thumbnailWidth, thumbnailHeight);
             return thumbnailGenerator.GenerateWebSiteThumbnailImageSync();
         }
 
-        public Bitmap GenerateWebSiteThumbnailImageSync()
+        private Bitmap GenerateWebSiteThumbnailImageSync()
         {
             try
             {
-                WebBrowser webBrowser = new WebBrowser();
+                var webBrowser = new WebBrowser();
                 webBrowser.ScrollBarsEnabled = false;       //禁用滚动条
                 webBrowser.ScriptErrorsSuppressed = true;   //禁用脚本错误
-                webBrowser.Navigate(m_Url);
-                webBrowser.ClientSize = new Size(this.m_BrowserWidth, this.m_BrowserHeight);
-                webBrowser.DocumentCompleted += new WebBrowserDocumentCompletedEventHandler(WebBrowser_DocumentCompleted);
-                webBrowser.NewWindow += new CancelEventHandler(WebBrowser_NewWindow);
+                webBrowser.Navigate(_mUrl);
+                webBrowser.ClientSize = new Size(_mBrowserWidth, _mBrowserHeight);
+                webBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+                webBrowser.NewWindow += WebBrowser_NewWindow;
                 //while (webBrowser.ReadyState != WebBrowserReadyState.Complete)
-                DateTime before = System.DateTime.Now;
+                var before = DateTime.Now;
                 while (true)
                 {
                     if (webBrowser.ReadyState == WebBrowserReadyState.Complete)
                         break;
-                    if (webBrowser.ReadyState == WebBrowserReadyState.Interactive && m_Bitmap != null)
+                    if (webBrowser.ReadyState == WebBrowserReadyState.Interactive && _mBitmap != null)
                         break;
-                    DateTime now = System.DateTime.Now;
-                    TimeSpan ts = now.Subtract(before);
+                    var now = DateTime.Now;
+                    var ts = now.Subtract(before);
                     if(ts.TotalSeconds >= 60)
                     {
                         try
                         {
                             // 强制截图
-                            webBrowser.DocumentCompleted -= new WebBrowserDocumentCompletedEventHandler(WebBrowser_DocumentCompleted);
-                            webBrowser.ClientSize = new Size(this.m_BrowserWidth, this.m_BrowserHeight);
+                            webBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
+                            webBrowser.ClientSize = new Size(_mBrowserWidth, _mBrowserHeight);
                             webBrowser.ScrollBarsEnabled = false;
-                            m_Bitmap = new Bitmap(webBrowser.Bounds.Width, webBrowser.Bounds.Height);
+                            _mBitmap = new Bitmap(webBrowser.Bounds.Width, webBrowser.Bounds.Height);
                             webBrowser.BringToFront();
-                            webBrowser.DrawToBitmap(m_Bitmap, webBrowser.Bounds);
-                            m_Bitmap = (Bitmap)m_Bitmap.GetThumbnailImage(m_ThumbnailWidth, m_ThumbnailHeight, null, IntPtr.Zero);
+                            webBrowser.DrawToBitmap(_mBitmap, webBrowser.Bounds);
+                            _mBitmap = (Bitmap)_mBitmap.GetThumbnailImage(_mThumbnailWidth, _mThumbnailHeight, null, IntPtr.Zero);
                         }
-                        catch (Exception) { }
+                        catch (Exception)
+                        {
+                            // ignored
+                        }
+
                         break;
                     }
                     Application.DoEvents();
                 }
                 webBrowser.Dispose();
-                return m_Bitmap;
+                return _mBitmap;
             }
             catch (Exception) {
                 return null;
             }
         }
 
-        private void WebBrowser_NewWindow(object sender, CancelEventArgs e)
+        private static void WebBrowser_NewWindow(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
         }
 
         private void WebBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
         {
-            WebBrowser m_WebBrowser = (WebBrowser)sender;
+            var mWebBrowser = (WebBrowser)sender;
             // ADDED
             //if (m_WebBrowser.ReadyState == WebBrowserReadyState.Complete)
-            if (m_WebBrowser.Url.ToString() != LastUrl)
-            {
-                LastUrl = m_WebBrowser.Url.ToString();
-                m_WebBrowser.DocumentCompleted -= new WebBrowserDocumentCompletedEventHandler(WebBrowser_DocumentCompleted);
-                m_WebBrowser.ClientSize = new Size(this.m_BrowserWidth, this.m_BrowserHeight);
-                m_WebBrowser.ScrollBarsEnabled = false;
-                m_Bitmap = new Bitmap(m_WebBrowser.Bounds.Width, m_WebBrowser.Bounds.Height);
-                m_WebBrowser.BringToFront();
-                m_WebBrowser.DrawToBitmap(m_Bitmap, m_WebBrowser.Bounds);
-                m_Bitmap = (Bitmap)m_Bitmap.GetThumbnailImage(m_ThumbnailWidth, m_ThumbnailHeight, null, IntPtr.Zero);
-                // 保存图片
-                //m_Bitmap.Save(System.DateTime.Now.ToString("yyyyMMddHHmmss") + ".jpg");
-            }
+            if (mWebBrowser.Url.ToString() == LastUrl) return;
+            LastUrl = mWebBrowser.Url.ToString();
+            mWebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
+            mWebBrowser.ClientSize = new Size(_mBrowserWidth, _mBrowserHeight);
+            mWebBrowser.ScrollBarsEnabled = false;
+            _mBitmap = new Bitmap(mWebBrowser.Bounds.Width, mWebBrowser.Bounds.Height);
+            mWebBrowser.BringToFront();
+            mWebBrowser.DrawToBitmap(_mBitmap, mWebBrowser.Bounds);
+            _mBitmap = (Bitmap)_mBitmap.GetThumbnailImage(_mThumbnailWidth, _mThumbnailHeight, null, IntPtr.Zero);
+            // 保存图片
+            //m_Bitmap.Save(System.DateTime.Now.ToString("yyyyMMddHHmmss") + ".jpg");
         }
     }
 

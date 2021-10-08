@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace FK域名检测工具
 {
     public static class TrashDomains
     {
-        public static string[] g_TrashDomain = {
+        private static readonly string[] GTrashDomain = {
 "wjp3c.com",
 "ck8d7.com",
 "4tabl.com",
@@ -709,26 +707,28 @@ namespace FK域名检测工具
         };
 
         public static bool IsTrashDomain(string domain) {
-            int index = domain.IndexOf("https://");
-            string cleanDomain = (index < 0)
+            var index = domain.IndexOf("https://", StringComparison.Ordinal);
+            var cleanDomain = (index < 0)
                 ? domain
                 : domain.Remove(index, domain.Length);
-            return g_TrashDomain.Contains(cleanDomain);
+            return GTrashDomain.Contains(cleanDomain);
         }
 
-        public static string GetRandomTrashDomain() {
-            Random rnd = new Random();
-            int index = rnd.Next(g_TrashDomain.Length);
-            return "https://" + g_TrashDomain[index];
+        private static string GetRandomTrashDomain() {
+            var rnd = new Random();
+            var index = rnd.Next(GTrashDomain.Length);
+            return "https://" + GTrashDomain[index];
         }
 
-        public static DomainCheckCondition GetRadomTrashDomainCheckCondition() {
-            DomainCheckCondition d = new DomainCheckCondition();
-            d.Domain = GetRandomTrashDomain();
-            d.Creator = "System";
-            d.CheckPath = "index.html";
-            d.CheckString = ".";
-            d.Product = "Unknown";
+        public static DomainCheckCondition GetRandomTrashDomainCheckCondition() {
+            var d = new DomainCheckCondition
+            {
+                Domain = GetRandomTrashDomain(),
+                Creator = "System",
+                CheckPath = "index.html",
+                CheckString = ".",
+                Product = "Unknown"
+            };
             return d;
         }
     }

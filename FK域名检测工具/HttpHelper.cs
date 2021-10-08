@@ -1,11 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Windows.Forms;
 
 namespace FK域名检测工具
 {
@@ -17,23 +13,20 @@ namespace FK域名检测工具
         /// <summary>
         /// Url of http server wich request will be created to.
         /// </summary>
-        public String URL { get; set; }
+        private string Url { get; set; }
 
         /// <summary>
         /// HTTP Verb wich will be used. Eg. GET, POST, PUT, DELETE.
         /// </summary>
-        public String Verb { get; set; }
+        private string Verb { get; set; }
 
         /// <summary>
         /// Request content, Json by default.
         /// </summary>
-        public String Content
-        {
-            get { return "application/json"; }
-        }
+        private static string Content => "application/json";
 
-        public HttpWebRequest HttpRequest { get; internal set; }
-        public HttpWebResponse HttpResponse { get; internal set; }
+        private HttpWebRequest HttpRequest { get; set; }
+        private HttpWebResponse HttpResponse { get; set; }
         public CookieContainer CookieContainer = new CookieContainer();
 
         /// <summary>
@@ -43,7 +36,7 @@ namespace FK域名检测工具
         /// <param name="verb">Http Verb that will be userd in this request</param>
         public Request(string url, string verb)
         {
-            URL = url;
+            Url = url;
             Verb = verb;
         }
 
@@ -58,18 +51,18 @@ namespace FK域名检测工具
         public object Execute<TT>(string url, object obj, string verb)
         {
             if (url != null)
-                URL = url;
+                Url = url;
 
             if (verb != null)
                 Verb = verb;
 
-            System.GC.Collect();
+            GC.Collect();
 
             StreamReader sr = null;
-            string tmp = "";
-            object result = null;
+            var tmp = "";
+            object result;
 
-            HttpRequest = (HttpWebRequest)WebRequest.Create(URL);
+            HttpRequest = (HttpWebRequest)WebRequest.Create(Url);
             HttpRequest.ContentType = Content;
             HttpRequest.Method = Verb;
             HttpRequest.ProtocolVersion = HttpVersion.Version10;
@@ -89,18 +82,11 @@ namespace FK域名检测工具
                     HttpRequest.Abort();
                     HttpRequest = null;
                 }
-                if (sr != null)
-                {
-                    sr.Dispose();
-                    sr.Close();
-                    sr = null;
-                }
-                if (HttpResponse != null)
-                {
-                    HttpResponse.Close();
-                    HttpResponse = null;
-                }
-                return err.Message.ToString();
+
+                if (HttpResponse == null) return err.Message;
+                HttpResponse.Close();
+                HttpResponse = null;
+                return err.Message;
             }
 
             try
@@ -113,17 +99,10 @@ namespace FK域名检测工具
                     HttpRequest.Abort();
                     HttpRequest = null;
                 }
-                if (sr != null)
-                {
-                    sr.Dispose();
-                    sr.Close();
-                    sr = null;
-                }
-                if (HttpResponse != null)
-                {
-                    HttpResponse.Close();
-                    HttpResponse = null;
-                }
+
+                if (HttpResponse == null) return err.ToString();
+                HttpResponse.Close();
+                HttpResponse = null;
                 return err.ToString();
             }
 
@@ -131,13 +110,11 @@ namespace FK域名检测工具
             {
                 if (HttpResponse != null)
                 {
-                    sr = new StreamReader(HttpResponse.GetResponseStream());
-                    if(sr != null) { 
-                        tmp = sr.ReadToEnd();
-                        sr.Dispose();
-                        sr.Close();
-                        sr = null;
-                    }
+                    sr = new StreamReader(HttpResponse.GetResponseStream() ?? throw new InvalidOperationException());
+                    tmp = sr.ReadToEnd();
+                    sr.Dispose();
+                    sr.Close();
+                    sr = null;
                 }
 
                 //MessageBox.Show(tmp);
@@ -154,13 +131,11 @@ namespace FK域名检测工具
                 {
                     sr.Dispose();
                     sr.Close();
-                    sr = null;
                 }
-                if (HttpResponse != null)
-                {
-                    HttpResponse.Close();
-                    HttpResponse = null;
-                }
+
+                if (HttpResponse == null) return err.ToString();
+                HttpResponse.Close();
+                HttpResponse = null;
                 return err.ToString();
             }
 
@@ -169,21 +144,14 @@ namespace FK域名检测工具
                 HttpRequest.Abort();
                 HttpRequest = null;
             }
-            if (sr != null)
-            {
-                sr.Dispose();
-                sr.Close();
-                sr = null;
-            }
-            if (HttpResponse != null)
-            {
-                HttpResponse.Close();
-                HttpResponse = null;
-            }
+
+            if (HttpResponse == null) return result;
+            HttpResponse.Close();
+            HttpResponse = null;
             return result;
         }
 
-        internal void WriteStream(object obj)
+        private void WriteStream(object obj)
         {
             try
             {
@@ -201,7 +169,10 @@ namespace FK域名检测工具
                     
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         /*
