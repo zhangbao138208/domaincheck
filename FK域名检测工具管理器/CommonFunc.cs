@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace FK域名检测工具管理器
 {
     public static class CommonFunc
     {
+        public static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        {  // 总是接受  
+            return true;
+        }
         public static byte[] ObjectToByteArray(object obj)
         {
             if (obj == null)

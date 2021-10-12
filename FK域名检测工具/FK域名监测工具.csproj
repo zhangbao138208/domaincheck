@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AESHelper.cs" />
+    <Compile Include="Api.cs" />
     <Compile Include="CommonFunc.cs" />
     <Compile Include="Curl.cs" />
     <Compile Include="DesHelper.cs" />

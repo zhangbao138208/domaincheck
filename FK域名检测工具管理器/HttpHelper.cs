@@ -63,7 +63,7 @@ namespace FK域名检测工具管理器
                 Verb = verb;
 
             HttpRequest = CreateRequest();
-
+            ServicePointManager.ServerCertificateValidationCallback = CommonFunc.CheckValidationResult;
             try
             {
                 WriteStream(obj);

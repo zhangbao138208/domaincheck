@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace FK域名检测工具管理器
 {
-    public partial class login : Form
+    public partial class Login : Form
     {
-        public string userName { get; set; }
-        public string compantName { get; set; }
-        public login()
+        public string UserName { get; private set; }
+        public new string CompanyName { get; private set; }
+        public Login()
         {
             InitializeComponent();
         }
@@ -27,11 +21,11 @@ namespace FK域名检测工具管理器
             // 登录
             // testLogin();
             // 向服务器申请登录
-            loginToServer();
+            LoginToServer();
         }
 
         // 尝试登录
-        private void loginToServer()
+        private void LoginToServer()
         {
             var request = new Request();
             var loginRequest = new LoginRequest { 
@@ -40,60 +34,57 @@ namespace FK域名检测工具管理器
                 MAC = "",
                 IsManager = "1" 
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/Login";
+            var apiPath = Api.Login;
             var result = request.Execute<LoginResponse>(apiPath, loginRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show((string)result);
-                loginFailed();
+                LoginFailed();
             }
             else
             {
                 var loginResponse = (LoginResponse)result;
                 if (string.IsNullOrEmpty(loginResponse.Error))
                 {
-                    loginSuccessed(loginResponse.Username, loginResponse.Product);
+                    LoginSuccess(loginResponse.Username, loginResponse.Product);
                 }
                 else
                 {
                     MessageBox.Show(loginResponse.Error);
-                    loginFailed();
+                    LoginFailed();
                 }
             }
-
-            return;
         }
 
 
         // 测试用
-        private void testLogin()
+        private void TestLogin()
         {
-            if (String.Compare(textBox_password.Text, textBox_account.Text) == 0)
+            if (string.CompareOrdinal(textBox_password.Text, textBox_account.Text) == 0)
             {
-                loginSuccessed(textBox_password.Text, "A01");
+                LoginSuccess(textBox_password.Text, "A01");
             }
             else
             {
-                loginFailed();
+                LoginFailed();
             }
         }
 
         // 登录成功
-        private void loginSuccessed(string userName, string company)
+        private void LoginSuccess(string userName, string company)
         {
             button_login.Enabled = true;
-            this.userName = userName;
-            this.compantName = company;
+            this.UserName = userName;
+            this.CompanyName = company;
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
 
         // 登录失败
-        private void loginFailed()
+        private void LoginFailed()
         {
-            userName = "";
-            compantName = "";
+            UserName = "";
+            CompanyName = "";
             label_errorInfo.Visible = true;
             textBox_password.Text = "";
             button_login.Enabled = true;

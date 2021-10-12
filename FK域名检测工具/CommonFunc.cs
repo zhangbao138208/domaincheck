@@ -356,7 +356,7 @@ namespace FK域名检测工具
             }
         }
 
-        private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
+        public static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {  // 总是接受  
             return true;
         }

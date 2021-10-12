@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AesHelper.cs" />
+    <Compile Include="Api.cs" />
     <Compile Include="CommonFunc.cs" />
     <Compile Include="createCP.cs">
       <SubType>Form</SubType>

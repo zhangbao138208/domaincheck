@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace FK域名检测工具
 {
-    public partial class login : Form
+    public partial class Login : Form
     {
-        public string userName { get; set; }
-        public string compantName { get; set; }
-        public int customIndex { get; set; }
-        public login()
+        public string UserName { get; private set; }
+        public new string CompanyName { get; private set; }
+        public int CustomIndex { get; private set; }
+        public Login()
         {
             InitializeComponent();
         }
@@ -29,28 +24,24 @@ namespace FK域名检测工具
             label_MAC.Text = CommonFunc.GetMac();
 
             // 加载保存的账密
-            loadAccountInfo();
+            LoadAccountInfo();
         }
 
         // placeholder效果
         private void textBox_password_Enter(object sender, EventArgs e)
         {
-            if (textBox_password.Text == "请输入密码")
-            {
-                textBox_password.ForeColor = Color.Black;
-                textBox_password.UseSystemPasswordChar = true;
-                textBox_password.Text = "";
-            }
+            if (textBox_password.Text != "请输入密码") return;
+            textBox_password.ForeColor = Color.Black;
+            textBox_password.UseSystemPasswordChar = true;
+            textBox_password.Text = "";
         }
 
         private void textBox_password_Leave(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(textBox_password.Text))
-            {
-                textBox_password.ForeColor = Color.LightGray;
-                textBox_password.UseSystemPasswordChar = false;
-                textBox_password.Text = "请输入密码";
-            }
+            if (!string.IsNullOrWhiteSpace(textBox_password.Text)) return;
+            textBox_password.ForeColor = Color.LightGray;
+            textBox_password.UseSystemPasswordChar = false;
+            textBox_password.Text = "请输入密码";
         }
 
         // 禁止空格
@@ -97,37 +88,37 @@ namespace FK域名检测工具
             // 单机登录
             // testLogin();
             // 向服务器申请登录
-            remoteLogin();
+            RemoteLogin();
         }
 
 
         // 登录成功
-        private void loginSuccessed(string userName, string product, int customIndex) {
-            saveAccountInfo(userName);
-            this.userName = userName;
-            this.compantName = product;
-            this.customIndex = customIndex;
+        private void LoginSuccess(string userName, string product, int customIndex) {
+            SaveAccountInfo(userName);
+            this.UserName = userName;
+            this.CompanyName = product;
+            this.CustomIndex = customIndex;
             button_login.Enabled = true;
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
 
         // 登录失败
-        private void loginFailed() {
+        private void LoginFailed() {
             label_errorInfo.Visible = true;
             textBox_password.Text = "";
             button_login.Enabled = true;
         }
 
         // 保存账密
-        private void saveAccountInfo(String account) {
+        private static void SaveAccountInfo(string account) {
             IniConfigMgr.IniInstance.WriteConfig("账号", account, false);
         }
 
         // 从配置文件加载账号
-        private void loadAccountInfo() {
-            string account = IniConfigMgr.IniInstance.LoadConfig("账号", false);
-            if (String.IsNullOrEmpty(account)) {
+        private void LoadAccountInfo() {
+            var account = IniConfigMgr.IniInstance.LoadConfig("账号", false);
+            if (string.IsNullOrEmpty(account)) {
                 return;
             }
 
@@ -135,9 +126,9 @@ namespace FK域名检测工具
         }
 
         // 尝试登录
-        private void remoteLogin() {
-            string account = textBox_password.Text;
-            string password = textBox_account.Text;
+        private void RemoteLogin() {
+            var account = textBox_password.Text;
+            var password = textBox_account.Text;
 
             var request = new Request();
             var loginRequest = new LoginRequest { 
@@ -146,40 +137,38 @@ namespace FK域名检测工具
                 Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                 IsManager = "0" 
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
-            var apiPath = "http://" + ip + "/v1/Login";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
+            var apiPath = Api.Login;
             var result = request.Execute<LoginResponse>(apiPath, loginRequest.ToJson(), "POST");
-            if (result is string)
+            if (result is string s)
             {
-                MessageBox.Show((string)result);
-                loginFailed();
+                MessageBox.Show(s);
+                LoginFailed();
             }
             else
             {
                 var loginResponse = (LoginResponse)result;
                 if (string.IsNullOrEmpty(loginResponse.Error))
                 {
-                    loginSuccessed(loginResponse.Username, loginResponse.Product, loginResponse.CustomIndex);
+                    LoginSuccess(loginResponse.Username, loginResponse.Product, loginResponse.CustomIndex);
                 }
                 else
                 {
                     MessageBox.Show(loginResponse.Error);
-                    loginFailed();
+                    LoginFailed();
                 }
             }
-
-            return;
         }
 
 
         // 测试用
-        private void testLogin() {
-            if (String.Compare(textBox_password.Text, textBox_account.Text) == 0)
+        private void TestLogin() {
+            if (string.CompareOrdinal(textBox_password.Text, textBox_account.Text) == 0)
             {
-                loginSuccessed(textBox_account.Text, "A01", 0);
+                LoginSuccess(textBox_account.Text, "A01", 0);
             }
             else {
-                loginFailed();
+                LoginFailed();
             }
         }
     }

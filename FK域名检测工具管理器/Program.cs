@@ -15,10 +15,10 @@ namespace FK域名检测工具管理器
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            login loginForm = new login();
+            Login loginForm = new Login();
             if (DialogResult.OK == loginForm.ShowDialog())
             {
-                Application.Run(new main(loginForm.userName, loginForm.compantName));
+                Application.Run(new Main(loginForm.UserName, loginForm.CompanyName));
             }
         }
     }

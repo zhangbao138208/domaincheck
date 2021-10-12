@@ -13,10 +13,10 @@ namespace FK域名检测工具
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            var loginForm = new login();
+            var loginForm = new Login();
             if (DialogResult.OK == loginForm.ShowDialog())
             {
-                Application.Run(new Main(loginForm.userName, loginForm.compantName, loginForm.customIndex));
+                Application.Run(new Main(loginForm.UserName, loginForm.CompanyName, loginForm.CustomIndex));
             }
         }
     }

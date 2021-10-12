@@ -61,6 +61,7 @@ namespace FK域名检测工具
             StreamReader sr = null;
             var tmp = "";
             object result;
+            ServicePointManager.ServerCertificateValidationCallback = CommonFunc.CheckValidationResult;
 
             HttpRequest = (HttpWebRequest)WebRequest.Create(Url);
             HttpRequest.ContentType = Content;

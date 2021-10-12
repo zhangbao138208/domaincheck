@@ -33,3 +33,4 @@ D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具
 D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具管理器\obj\Debug\FK域名监测工具管理器.csproj.GenerateResource.cache
 D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具管理器\obj\Debug\FK域名监测工具管理器.csproj.CoreCompileInputs.cache
 D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具管理器\obj\Debug\FK域名监测工具管理器.csproj.CopyComplete
+D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具管理器\obj\Debug\FK域名监测工具管理器.csproj.AssemblyReference.cache

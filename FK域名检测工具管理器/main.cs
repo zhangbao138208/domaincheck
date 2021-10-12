@@ -1,49 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace FK域名检测工具管理器
 {
-    public partial class main : Form
+    public partial class Main : Form
     {
 
-        private List<Log> g_LogStructList = new List<Log>();
-        private int g_LogPageSize = 20;         // 单页数量
-        private int g_LogCount = 0;             // 总日志数
-        private int g_LogPage = 0;              // 总日志页数
-        private int g_LogCurrentPage = 1;       // 当前日志页数
+        private readonly List<Log> _gLogStructList = new List<Log>();
+        private const int GLogPageSize = 20; // 单页数量
+        private int _gLogCount = 0;             // 总日志数
+        private int _gLogPage = 0;              // 总日志页数
+        private int _gLogCurrentPage = 1;       // 当前日志页数
 
-        private List<DomainInfo> g_DomainStructList = new List<DomainInfo>();
-        private int g_DomainPageSize = 20;      // 单页数量
-        private int g_DomainCount = 0;          // 总域名数
-        private int g_DomainPage = 0;           // 总域名页数
-        private int g_DomainCurrentPage = 1;    // 当前域名页数
+        private readonly List<DomainInfo> _gDomainStructList = new List<DomainInfo>();
+        private const int GDomainPageSize = 20; // 单页数量
+        private int _gDomainCount = 0;          // 总域名数
+        private int _gDomainPage = 0;           // 总域名页数
+        private int _gDomainCurrentPage = 1;    // 当前域名页数
 
-        private List<CPInfo> g_CPStructList = new List<CPInfo>();
-        private int g_CPPageSize = 20;          // 单页数量
-        private int g_CPCount = 0;              // 总检查点数
-        private int g_CPPage = 0;               // 总检查点页数
-        private int g_CPCurrentPage = 1;        // 当前检查点页数
+        private readonly List<CPInfo> _gCpStructList = new List<CPInfo>();
+        private const int GCpPageSize = 20; // 单页数量
+        private int _gCpCount = 0;              // 总检查点数
+        private int _gCpPage = 0;               // 总检查点页数
+        private int _gCpCurrentPage = 1;        // 当前检查点页数
 
-        private List<ActiveClientInfo> g_ActiveClientList = new List<ActiveClientInfo>();
-        private List<IPListInfo> g_IPListInfoList = new List<IPListInfo>();
+        private readonly List<ActiveClientInfo> _gActiveClientList = new List<ActiveClientInfo>();
+        private readonly List<IPListInfo> _gIpListInfoList = new List<IPListInfo>();
 
-        private string userName = "";
-        private string companyName = "";
+        private readonly string _userName;
+        private readonly string _companyName;
 
 
-        public main(string userName, string companyName)
+        public Main(string userName, string companyName)
         {
             InitializeComponent();
 
-            this.userName = userName;
-            this.companyName = companyName;
+            this._userName = userName;
+            this._companyName = companyName;
             
         }
 
@@ -62,41 +58,38 @@ namespace FK域名检测工具管理器
             this.dateTimePicker_logResearchStart.Value = todayFirstSecond;
             this.dateTimePicker_logResearchEnd.Value = todayLastSecond;
 
-            this.label_company.Text = companyName;
-            this.label_username.Text = userName;
+            this.label_company.Text = _companyName;
+            this.label_username.Text = _userName;
 
             this.comboBox_logResearchResult.SelectedIndex = 0;
             this.comboBox_domainCheckStatus.SelectedIndex = 0;
-            for (int i = 0; i < this.comboBox_company.Items.Count; i++)
+            for (var i = 0; i < this.comboBox_company.Items.Count; i++)
             {
-                string value = this.comboBox_company.GetItemText(this.comboBox_company.Items[i]);
-                if (string.Compare(value, this.companyName) == 0) {
-                    this.comboBox_company.SelectedIndex = i;
-                    break;
-                }
+                var value = this.comboBox_company.GetItemText(this.comboBox_company.Items[i]);
+                if (string.CompareOrdinal(value, this._companyName) != 0) continue;
+                this.comboBox_company.SelectedIndex = i;
+                break;
             }
-            if (string.Compare(this.companyName, "全部") != 0)
+            if (string.CompareOrdinal(this._companyName, "全部") != 0)
             {
                 this.comboBox_product.Enabled = false;
             }
-            for (int i = 0; i < this.comboBox_product.Items.Count; i++)
+            for (var i = 0; i < this.comboBox_product.Items.Count; i++)
             {
-                string value = this.comboBox_product.GetItemText(this.comboBox_product.Items[i]);
-                if (string.Compare(value, this.companyName) == 0)
-                {
-                    this.comboBox_product.SelectedIndex = i;
-                    break;
-                }
+                var value = this.comboBox_product.GetItemText(this.comboBox_product.Items[i]);
+                if (string.CompareOrdinal(value, this._companyName) != 0) continue;
+                this.comboBox_product.SelectedIndex = i;
+                break;
             }
 
             this.comboBox_checkpointName.Items.Clear();
-            List<string> checkPointList = getCheckPointNameList();
+            var checkPointList = GetCheckPointNameList();
             if (checkPointList.Count > 0)
             {
                 this.comboBox_checkpointName.Items.Add("全部");
-                for (int i = 0; i < checkPointList.Count; i++)
+                foreach (var t in checkPointList)
                 {
-                    this.comboBox_checkpointName.Items.Add(checkPointList[i]);
+                    this.comboBox_checkpointName.Items.Add(t);
                 }
                 this.comboBox_checkpointName.SelectedIndex = 0;
             }
@@ -108,7 +101,7 @@ namespace FK域名检测工具管理器
             tabControl_page.TabPages.Add(tabPage_ipList);
             this.dataGridView_iplist.DataError += myDataGridView1_DataError;
 
-            if (string.Compare(this.userName, "admin") == 0) {
+            if (string.CompareOrdinal(this._userName, "admin") == 0) {
                 this.button_deleteAllDomains.Visible = true;
                 this.button_downloadAllDomains.Visible = true;
             }
@@ -209,11 +202,11 @@ namespace FK域名检测工具管理器
                 Domain = textbox_logResearchDomain.Text,
                 CheckResult = comboBox_logResearchResult.Text,
                 Creator = textBox_logResearchCreator.Text,
-                Product = this.companyName,
+                Product = this._companyName,
                 Page = 917262936
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetPageLog";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetPageLog;
             var result = request.Execute<GetPageLogResponse>(apiPath, getPageLogRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -221,61 +214,55 @@ namespace FK域名检测工具管理器
                 this.button_downloadLog.Enabled = true;
                 return;
             }
-            else
+
+            var getPageLogResponse = (GetPageLogResponse)result;
+            allLogs.AddRange(getPageLogResponse.Logs);
+            string filename = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss") + ".csv";
+            string pathname = "download_" + DateTime.Now.ToString("yyyy_MM_dd");
+            if (!Directory.Exists(pathname))
             {
-                var getPageLogResponse = (GetPageLogResponse)result;
-                for (int i = 0; i < getPageLogResponse.Logs.Length; ++i)
-                {
-                    allLogs.Add(getPageLogResponse.Logs[i]);
-                }
-                string filename = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss") + ".csv";
-                string pathname = "download_" + DateTime.Now.ToString("yyyy_MM_dd");
-                if (!Directory.Exists(pathname))
-                {
-                    Directory.CreateDirectory(pathname);
-                    filename = pathname + "/" + filename;
-                }
-                CsvFileUtility.SaveDataToCSVFile(allLogs, pathname, filename);
-                MessageBox.Show("文件 " + filename + " 下载完毕.", "提示");
-                this.button_downloadLog.Enabled = true;
-                return;
+                Directory.CreateDirectory(pathname);
+                filename = pathname + "/" + filename;
             }
+            CsvFileUtility.SaveDataToCSVFile(allLogs, pathname, filename);
+            MessageBox.Show("文件 " + filename + " 下载完毕.", "提示");
+            this.button_downloadLog.Enabled = true;
         }
 
-        private void udpdatePageLogUI() {
-            var bindingList = new BindingList<Log>(g_LogStructList);
+        private void UpdatePageLogUi() {
+            var bindingList = new BindingList<Log>(_gLogStructList);
             var source = new BindingSource(bindingList, null);
             this.dataGridView_log.DataSource = source;
         }
 
-        private void updateTotalLogUI() {
-            this.label_totalLogCount.Text = g_LogCount.ToString();
-            this.label_logPageCount.Text = g_LogPage.ToString();
-            if (g_LogCurrentPage <= 0)
+        private void UpdateTotalLogUi() {
+            this.label_totalLogCount.Text = _gLogCount.ToString();
+            this.label_logPageCount.Text = _gLogPage.ToString();
+            if (_gLogCurrentPage <= 0)
             {
-                g_LogCurrentPage = 1;
+                _gLogCurrentPage = 1;
             }
-            if (g_LogCurrentPage > g_LogPage)
+            if (_gLogCurrentPage > _gLogPage)
             {
-                g_LogCurrentPage = g_LogPage;
+                _gLogCurrentPage = _gLogPage;
             }
-            this.textBox_currentLogPage.Text = g_LogCurrentPage.ToString();
+            this.textBox_currentLogPage.Text = _gLogCurrentPage.ToString();
         }
 
-        private void testInitLog() {
+        private void TestInitLog() {
             Random rnd = new Random();
-            g_LogCount = rnd.Next(1, 30000);
-            if (g_LogCount % g_LogPageSize == 0)
+            _gLogCount = rnd.Next(1, 30000);
+            if (_gLogCount % GLogPageSize == 0)
             {
-                g_LogPage = g_LogCount / g_LogPageSize;
+                _gLogPage = _gLogCount / GLogPageSize;
             }
             else {
-                g_LogPage = g_LogCount / g_LogPageSize + 1;
+                _gLogPage = _gLogCount / GLogPageSize + 1;
             }
         }
 
         // 向服务器请求总条目数
-        private int initLog() {
+        private int InitLog() {
             // 检查日期先后顺序
             DateTime start = this.dateTimePicker_logResearchStart.Value;
             DateTime end = this.dateTimePicker_logResearchEnd.Value;
@@ -294,25 +281,24 @@ namespace FK域名检测工具管理器
                 CheckTimeStart = dateTimePicker_logResearchStart.Text,
                 CheckTimeEnd = dateTimePicker_logResearchEnd.Text,
                 Domain = textbox_logResearchDomain.Text,
-                Product = this.companyName,
+                Product = this._companyName,
                 Creator = textBox_logResearchCreator.Text,
                 CheckResult = comboBox_logResearchResult.Text
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetLogsCount";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetLogsCount;
             var result = request.Execute<GetLogCountResponse>(apiPath, getLogCountRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
                 return -1;
             }
-            else {
-                var getLogCountResponse = (GetLogCountResponse)result;
-                return getLogCountResponse.TotalCount;
-            }
+
+            var getLogCountResponse = (GetLogCountResponse)result;
+            return getLogCountResponse.TotalCount;
         }
 
-        private void testGetPageLog()
+        private void TestGetPageLog()
         {
             /*
             g_LogStructList.Clear();
@@ -336,8 +322,8 @@ namespace FK域名检测工具管理器
             */
         }
 
-        private void getPageLog() {
-            g_LogStructList.Clear();
+        private void GetPageLog() {
+            _gLogStructList.Clear();
 
             var request = new Request();
             var getPageLogRequest = new GetPageLogRequest
@@ -347,21 +333,20 @@ namespace FK域名检测工具管理器
                 Domain = textbox_logResearchDomain.Text,
                 CheckResult = comboBox_logResearchResult.Text,
                 Creator = textBox_logResearchCreator.Text,
-                Product = this.companyName,
-                Page = g_LogCurrentPage
+                Product = this._companyName,
+                Page = _gLogCurrentPage
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetPageLog";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetPageLog;
             var result = request.Execute<GetPageLogResponse>(apiPath, getPageLogRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
-                return;
             }
             else
             {
                 var getPageLogResponse = (GetPageLogResponse)result;
-                for (int i = 0; i < getPageLogResponse.Logs.Length; ++i)
+                foreach (var t in getPageLogResponse.Logs)
                 {
                     //Log oneLog = new Log();
                     //oneLog.LogIndex = 1;
@@ -371,7 +356,7 @@ namespace FK域名检测工具管理器
                     //oneLog.CheckDate = "2000-12-13 08:21:21";
                     //oneLog.Result = "成功";
                     //oneLog.PrintScreen = new byte[0];
-                    g_LogStructList.Add(getPageLogResponse.Logs[i]);
+                    _gLogStructList.Add(t);
                     /*
                     LogStruct oneLog = new LogStruct("www.baidu.com",
                         rnd.Next(1, 255).ToString() + "." + rnd.Next(1, 255).ToString() + "." + rnd.Next(1, 255).ToString() + "." + rnd.Next(1, 255).ToString(),
@@ -383,29 +368,26 @@ namespace FK域名检测工具管理器
                     */
                     // g_LogStructList.Add(oneLog);
                 }
-                return;
             }
         }
 
         // 搜索LOG
         private void button_research_Click(object sender, EventArgs e)
         {
-            int nCount = initLog();
-            if (nCount >= 0)
+            int nCount = InitLog();
+            if (nCount < 0) return;
+            _gLogCount = nCount;
+            if (_gLogCount % GLogPageSize == 0)
             {
-                g_LogCount = nCount;
-                if (g_LogCount % g_LogPageSize == 0)
-                {
-                    g_LogPage = g_LogCount / g_LogPageSize;
-                }
-                else
-                {
-                    g_LogPage = g_LogCount / g_LogPageSize + 1;
-                }
-                updateTotalLogUI();
-                getPageLog();
-                udpdatePageLogUI();
+                _gLogPage = _gLogCount / GLogPageSize;
             }
+            else
+            {
+                _gLogPage = _gLogCount / GLogPageSize + 1;
+            }
+            UpdateTotalLogUi();
+            GetPageLog();
+            UpdatePageLogUi();
         }
 
         // 域名输入限制
@@ -426,100 +408,96 @@ namespace FK域名检测工具管理器
         // 上一页LOG
         private void button_prevPage_Click(object sender, EventArgs e)
         {
-            int nCount = initLog();
-            if (nCount >= 0)
+            int nCount = InitLog();
+            if (nCount < 0) return;
+            _gLogCount = nCount;
+            if (_gLogCount % GLogPageSize == 0)
             {
-                g_LogCount = nCount;
-                if (g_LogCount % g_LogPageSize == 0)
-                {
-                    g_LogPage = g_LogCount / g_LogPageSize;
-                }
-                else
-                {
-                    g_LogPage = g_LogCount / g_LogPageSize + 1;
-                }
-                g_LogCurrentPage -= 1;
-                if (g_LogCurrentPage <= 1)
-                {
-                    g_LogCurrentPage = 1;
-                }
-
-                updateTotalLogUI();
-                getPageLog();
-                udpdatePageLogUI();
+                _gLogPage = _gLogCount / GLogPageSize;
             }
+            else
+            {
+                _gLogPage = _gLogCount / GLogPageSize + 1;
+            }
+            _gLogCurrentPage -= 1;
+            if (_gLogCurrentPage <= 1)
+            {
+                _gLogCurrentPage = 1;
+            }
+
+            UpdateTotalLogUi();
+            GetPageLog();
+            UpdatePageLogUi();
         }
 
         // 下一页LOG
         private void button_nextPage_Click(object sender, EventArgs e)
         {
-            int nCount = initLog();
-            if (nCount >= 0)
+            int nCount = InitLog();
+            if (nCount < 0) return;
+            _gLogCount = nCount;
+            if (_gLogCount % GLogPageSize == 0)
             {
-                g_LogCount = nCount;
-                if (g_LogCount % g_LogPageSize == 0)
-                {
-                    g_LogPage = g_LogCount / g_LogPageSize;
-                }
-                else
-                {
-                    g_LogPage = g_LogCount / g_LogPageSize + 1;
-                }
-                g_LogCurrentPage += 1;
-                if (g_LogCurrentPage >= g_LogPage)
-                {
-                    g_LogCurrentPage = g_LogPage;
-                }
-
-                updateTotalLogUI();
-                getPageLog();
-                udpdatePageLogUI();
+                _gLogPage = _gLogCount / GLogPageSize;
             }
+            else
+            {
+                _gLogPage = _gLogCount / GLogPageSize + 1;
+            }
+            _gLogCurrentPage += 1;
+            if (_gLogCurrentPage >= _gLogPage)
+            {
+                _gLogCurrentPage = _gLogPage;
+            }
+
+            UpdateTotalLogUi();
+            GetPageLog();
+            UpdatePageLogUi();
         }
 
         // 第一页LOG
         private void button_firstPage_Click(object sender, EventArgs e)
         {
-            int nCount = initLog();
+            int nCount = InitLog();
             if (nCount >= 0)
             {
-                g_LogCount = nCount;
-                if (g_LogCount % g_LogPageSize == 0)
+                _gLogCount = nCount;
+                if (_gLogCount % GLogPageSize == 0)
                 {
-                    g_LogPage = g_LogCount / g_LogPageSize;
+                    _gLogPage = _gLogCount / GLogPageSize;
                 }
                 else
                 {
-                    g_LogPage = g_LogCount / g_LogPageSize + 1;
+                    _gLogPage = _gLogCount / GLogPageSize + 1;
                 }
-                g_LogCurrentPage = 1;
+                _gLogCurrentPage = 1;
 
-                updateTotalLogUI();
-                getPageLog();
-                udpdatePageLogUI();
+                UpdateTotalLogUi();
+                GetPageLog();
+                UpdatePageLogUi();
             }
         }
 
         // 最后一页LOG
         private void button_lastPage_Click(object sender, EventArgs e)
         {
-            int nCount = initLog();
+            int nCount = InitLog();
             if (nCount >= 0)
             {
-                g_LogCount = nCount;
-                if (g_LogCount % g_LogPageSize == 0)
+                _gLogCount = nCount;
+                if (_gLogCount % GLogPageSize == 0)
                 {
-                    g_LogPage = g_LogCount / g_LogPageSize;
+                    _gLogPage = _gLogCount / GLogPageSize;
                 }
                 else
                 {
-                    g_LogPage = g_LogCount / g_LogPageSize + 1;
+                    _gLogPage = _gLogCount / GLogPageSize + 1;
                 }
-                g_LogCurrentPage = g_LogPage;
+                _gLogCurrentPage = _gLogPage;
 
-                updateTotalLogUI();
-                getPageLog();
-                udpdatePageLogUI();
+                UpdateTotalLogUi();
+                GetPageLog();
+                UpdatePageLogUi();
             }
         }
 
@@ -542,26 +520,26 @@ namespace FK域名检测工具管理器
                 if (!isParsable) {
                     nSupportPage = 0;
                 }
-                if (nSupportPage >= g_LogPage) { nSupportPage = g_LogPage; }
+                if (nSupportPage >= _gLogPage) { nSupportPage = _gLogPage; }
                 if (nSupportPage <= 1) { nSupportPage = 1; }
 
-                g_LogCurrentPage = nSupportPage;
+                _gLogCurrentPage = nSupportPage;
 
-                int nCount = initLog();
+                int nCount = InitLog();
                 if (nCount >= 0)
                 {
-                    g_LogCount = nCount;
-                    if (g_LogCount % g_LogPageSize == 0)
+                    _gLogCount = nCount;
+                    if (_gLogCount % GLogPageSize == 0)
                     {
-                        g_LogPage = g_LogCount / g_LogPageSize;
+                        _gLogPage = _gLogCount / GLogPageSize;
                     }
                     else
                     {
-                        g_LogPage = g_LogCount / g_LogPageSize + 1;
+                        _gLogPage = _gLogCount / GLogPageSize + 1;
                     }
-                    updateTotalLogUI();
-                    getPageLog();
-                    udpdatePageLogUI();
+                    UpdateTotalLogUi();
+                    GetPageLog();
+                    UpdatePageLogUi();
                 }
             }
         }
@@ -581,7 +559,7 @@ namespace FK域名检测工具管理器
             int selectRow = this.dataGridView_log.SelectedCells[0].RowIndex;
             int selectColumn = this.dataGridView_log.SelectedCells[0].ColumnIndex;
 
-            int domainColumn = this.dataGridView_log.Columns["Column_Domain"].Index;
+            int domainColumn = dataGridView_log.Columns["Column_Domain"].Index;
             int viewColumn = this.dataGridView_log.Columns["Column_ViewPS"].Index;
             int downloadColumn = this.dataGridView_log.Columns["Column_DownloadPS"].Index;
 
@@ -591,7 +569,6 @@ namespace FK域名检测工具管理器
                 DataGridViewButtonCell cell = (DataGridViewButtonCell)this.dataGridView_log.SelectedCells[0];
                 Clipboard.SetDataObject(cell.Value);
                 label_log_copyinfo.Text = "已复制  " + cell.Value.ToString() + "  到剪切板，按Ctrl+V可粘贴";
-                return;
             }
             // 查看截图
             else if (selectColumn == viewColumn)
@@ -601,7 +578,6 @@ namespace FK域名检测工具管理器
 
                 showPicture form = new showPicture(pictureData);
                 form.ShowDialog();
-                return;
             }
             // 下载截图
             else if (selectColumn == downloadColumn) {
@@ -616,7 +592,6 @@ namespace FK域名检测工具管理器
                 else {
                     MessageBox.Show("图片下载失败.", "错误");
                 }
-                return;
             }
         }
         #endregion
@@ -624,20 +599,20 @@ namespace FK域名检测工具管理器
 
 #region DOMAIN
 
-        private void testInitDomain() {
+        private void TestInitDomain() {
             Random rnd = new Random();
-            g_DomainCount = rnd.Next(1, 30000);
-            if (g_DomainCount % g_DomainPageSize == 0)
+            _gDomainCount = rnd.Next(1, 30000);
+            if (_gDomainCount % GDomainPageSize == 0)
             {
-                g_DomainPage = g_DomainCount / g_DomainPageSize;
+                _gDomainPage = _gDomainCount / GDomainPageSize;
             }
             else
             {
-                g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                _gDomainPage = _gDomainCount / GDomainPageSize + 1;
             }
         }
 
-        private int initDomain() {
+        private int InitDomain() {
             // 检查日期先后顺序
             DateTime start = this.dateTimePicker_domainResearchStart.Value.Date;
             DateTime end = this.dateTimePicker_domainResearchEnd.Value.Date;
@@ -651,22 +626,21 @@ namespace FK域名检测工具管理器
             var request = new Request();
             string s = comboBox_domainCheckStatus.SelectedItem.ToString();
             int isNeedCheck = 0;
-            if (String.Compare(s, "需监测") == 0) {
+            if (string.CompareOrdinal(s, "需监测") == 0) {
                 isNeedCheck = 1;
             }
             string checkpointIndex = "";
-            if (string.Compare(comboBox_checkpointName.Text, "全部") == 0)
+            if (string.CompareOrdinal(comboBox_checkpointName.Text, "全部") == 0)
             {
                 // checkpointIndex = "全部";
-                for (int i = 0; i < comboBox_checkpointName.Items.Count; i++)
+                foreach (var t in comboBox_checkpointName.Items)
                 {
-                    string oneItem = comboBox_checkpointName.GetItemText(comboBox_checkpointName.Items[i]);
-                    if (string.Compare(oneItem, "全部") != 0)
-                    {
-                        checkpointIndex += oneItem.Split('_')[1];
-                        checkpointIndex += ",";
-                    }
+                    var oneItem = comboBox_checkpointName.GetItemText(t);
+                    if (string.CompareOrdinal(oneItem, "全部") == 0) continue;
+                    checkpointIndex += oneItem.Split('_')[1];
+                    checkpointIndex += ",";
                 }
+
                 if (checkpointIndex.Length > 1)
                 {
                     checkpointIndex = checkpointIndex.Substring(0, checkpointIndex.Length - 1);
@@ -688,36 +662,34 @@ namespace FK域名检测工具管理器
                 CheckpointIndex = checkpointIndex,
                 IsNeedCheck = isNeedCheck
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetDomainsCount";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetDomainsCount;
             var result = request.Execute<GetDomainCountResponse>(apiPath, getDomainCountRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
                 return -1;
             }
-            else
-            {
-                var getDomainCountResponse = (GetDomainCountResponse)result;
-                return getDomainCountResponse.TotalCount;
-            }
+
+            var getDomainCountResponse = (GetDomainCountResponse)result;
+            return getDomainCountResponse.TotalCount;
         }
 
-        private void updateTotalDomainUI() {
-            this.label_totalDomainCount.Text = g_DomainCount.ToString();
-            this.label_domainPageCount.Text = g_DomainPage.ToString();
-            if (g_DomainCurrentPage <= 0)
+        private void UpdateTotalDomainUi() {
+            this.label_totalDomainCount.Text = _gDomainCount.ToString();
+            this.label_domainPageCount.Text = _gDomainPage.ToString();
+            if (_gDomainCurrentPage <= 0)
             {
-                g_DomainCurrentPage = 1;
+                _gDomainCurrentPage = 1;
             }
-            if (g_DomainCurrentPage > g_DomainPage)
+            if (_gDomainCurrentPage > _gDomainPage)
             {
-                g_DomainCurrentPage = g_DomainPage;
+                _gDomainCurrentPage = _gDomainPage;
             }
-            this.textBox_currentDomainPage.Text = g_DomainCurrentPage.ToString();
+            this.textBox_currentDomainPage.Text = _gDomainCurrentPage.ToString();
         }
 
-        private void testGetPageDomain() {
+        private void TestGetPageDomain() {
             /*
             g_DomainStructList.Clear();
             Random rnd = new Random();
@@ -741,27 +713,28 @@ namespace FK域名检测工具管理器
             */
         }
 
-        private void getPageDomain() {
-            g_DomainStructList.Clear();
+        private void GetPageDomain() {
+            _gDomainStructList.Clear();
 
             var request = new Request();
-            string s = comboBox_domainCheckStatus.SelectedItem.ToString();
-            int isNeedCheck = 0;
-            if (String.Compare(s, "需监测") == 0)
+            var s = comboBox_domainCheckStatus.SelectedItem.ToString();
+            var isNeedCheck = 0;
+            if (string.CompareOrdinal(s, "需监测") == 0)
             {
                 isNeedCheck = 1;
             }
-            string checkpointIndex = "";
-            if (string.Compare(comboBox_checkpointName.Text, "全部") == 0)
+            var checkpointIndex = "";
+            if (string.CompareOrdinal(comboBox_checkpointName.Text, "全部") == 0)
             {
                 //checkpointIndex = "全部";
-                for (int i = 0; i < comboBox_checkpointName.Items.Count; i++) {
-                    string oneItem = comboBox_checkpointName.GetItemText(comboBox_checkpointName.Items[i]);
-                    if (string.Compare(oneItem, "全部") != 0) {
-                        checkpointIndex += oneItem.Split('_')[1];
-                        checkpointIndex += ",";
-                    }
+                foreach (var t in comboBox_checkpointName.Items)
+                {
+                    var oneItem = comboBox_checkpointName.GetItemText(t);
+                    if (string.CompareOrdinal(oneItem, "全部") == 0) continue;
+                    checkpointIndex += oneItem.Split('_')[1];
+                    checkpointIndex += ",";
                 }
+
                 if (checkpointIndex.Length > 1)
                 {
                     checkpointIndex = checkpointIndex.Substring(0, checkpointIndex.Length - 1);
@@ -782,90 +755,78 @@ namespace FK域名检测工具管理器
                 Product = comboBox_product.Text,
                 CheckpointIndex = checkpointIndex,
                 IsNeedCheck = isNeedCheck,
-                Page = g_DomainCurrentPage
+                Page = _gDomainCurrentPage
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetPageDomain";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetPageDomain;
             var result = request.Execute<GetPageDomainResponse>(apiPath, getPageDomainRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
-                return;
             }
             else
             {
                 var getPageDomainResponse = (GetPageDomainResponse)result;
-                for (int i = 0; i < getPageDomainResponse.Domains.Length; ++i)
-                {
-                    g_DomainStructList.Add(getPageDomainResponse.Domains[i]);
-                }
-                return;
+                _gDomainStructList.AddRange(getPageDomainResponse.Domains);
             }
         }
 
-        private List<string> testGetCheckPointNameList() {
+        private List<string> TestGetCheckPointNameList() {
             List<string> result = new List<string>();
             Random rnd = new Random();
-            for (int i = 0; i < rnd.Next(3, 10); ++i) {
-                result.Add(this.companyName + "_" + rnd.Next(1, 100).ToString());
+            for (var i = 0; i < rnd.Next(3, 10); ++i) {
+                result.Add(this._companyName + "_" + rnd.Next(1, 100));
             }
             return result;
         }
 
-        private List<string> getCheckPointNameList()
+        private List<string> GetCheckPointNameList()
         {
-            List<string> resultList = new List<string>();
+            var resultList = new List<string>();
             var request = new Request();
             var getCheckpointIndexsRequest = new GetCheckpointIndexsRequest
             {
-                Product = this.companyName
+                Product = this._companyName
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetCheckpointIndexs";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetCheckPointIndex;
             var result = request.Execute<GetCheckpointIndexsResponse>(apiPath, getCheckpointIndexsRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
                 return resultList;
             }
-            else
-            {
-                var getCheckpointIndexsResponse = (GetCheckpointIndexsResponse)result;
-                if (getCheckpointIndexsResponse.CheckpointIndexs != null)
-                {
-                    for (int i = 0; i < getCheckpointIndexsResponse.CheckpointIndexs.Length; ++i)
-                    {
-                        resultList.Add(getCheckpointIndexsResponse.CheckpointIndexs[i]);
-                    }
-                }
-                return resultList;
-            }
+
+            var getCheckpointIndexsResponse = (GetCheckpointIndexsResponse)result;
+            if (getCheckpointIndexsResponse.CheckpointIndexs == null) return resultList;
+            resultList.AddRange(getCheckpointIndexsResponse.CheckpointIndexs);
+            return resultList;
         }
 
-        private void udpdatePageDomainUI() {
-            var bindingList = new BindingList<DomainInfo>(g_DomainStructList);
+        private void UdpdatePageDomainUi() {
+            var bindingList = new BindingList<DomainInfo>(_gDomainStructList);
             var source = new BindingSource(bindingList, null);
             this.dataGridView_domain.DataSource = source;
         }
         // 搜索域名
         private void button_domainResearch_Click(object sender, EventArgs e)
         {
-            int nCount = initDomain();
+            int nCount = InitDomain();
             if (nCount >= 0)
             {
-                g_DomainCount = nCount;
-                if (g_DomainCount % g_DomainPageSize == 0)
+                _gDomainCount = nCount;
+                if (_gDomainCount % GDomainPageSize == 0)
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize;
+                    _gDomainPage = _gDomainCount / GDomainPageSize;
                 }
                 else
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                    _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                 }
 
-                updateTotalDomainUI();
-                getPageDomain();
-                udpdatePageDomainUI();
+                UpdateTotalDomainUi();
+                GetPageDomain();
+                UdpdatePageDomainUi();
             }
         }
 
@@ -886,101 +847,101 @@ namespace FK域名检测工具管理器
 
         private void button_domainFirstPage_Click(object sender, EventArgs e)
         {
-            int nCount = initDomain();
+            int nCount = InitDomain();
             if (nCount >= 0)
             {
-                g_DomainCount = nCount;
-                if (g_DomainCount % g_DomainPageSize == 0)
+                _gDomainCount = nCount;
+                if (_gDomainCount % GDomainPageSize == 0)
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize;
+                    _gDomainPage = _gDomainCount / GDomainPageSize;
                 }
                 else
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                    _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                 }
 
-                g_DomainCurrentPage = 1;
+                _gDomainCurrentPage = 1;
 
-                updateTotalDomainUI();
-                getPageDomain();
-                udpdatePageDomainUI();
+                UpdateTotalDomainUi();
+                GetPageDomain();
+                UdpdatePageDomainUi();
             }
         }
 
         private void button_domainPrevPage_Click(object sender, EventArgs e)
         {
-            int nCount = initDomain();
+            int nCount = InitDomain();
             if (nCount >= 0)
             {
-                g_DomainCount = nCount;
-                if (g_DomainCount % g_DomainPageSize == 0)
+                _gDomainCount = nCount;
+                if (_gDomainCount % GDomainPageSize == 0)
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize;
+                    _gDomainPage = _gDomainCount / GDomainPageSize;
                 }
                 else
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                    _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                 }
 
-                g_DomainCurrentPage -= 1;
-                if (g_DomainCurrentPage <= 1)
+                _gDomainCurrentPage -= 1;
+                if (_gDomainCurrentPage <= 1)
                 {
-                    g_DomainCurrentPage = 1;
+                    _gDomainCurrentPage = 1;
                 }
 
-                updateTotalDomainUI();
-                getPageDomain();
-                udpdatePageDomainUI();
+                UpdateTotalDomainUi();
+                GetPageDomain();
+                UdpdatePageDomainUi();
             }
         }
 
         private void button_domainNextPage_Click(object sender, EventArgs e)
         {
-            int nCount = initDomain();
+            int nCount = InitDomain();
             if (nCount >= 0)
             {
-                g_DomainCount = nCount;
-                if (g_DomainCount % g_DomainPageSize == 0)
+                _gDomainCount = nCount;
+                if (_gDomainCount % GDomainPageSize == 0)
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize;
+                    _gDomainPage = _gDomainCount / GDomainPageSize;
                 }
                 else
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                    _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                 }
 
-                g_DomainCurrentPage += 1;
-                if (g_DomainCurrentPage >= g_DomainPage)
+                _gDomainCurrentPage += 1;
+                if (_gDomainCurrentPage >= _gDomainPage)
                 {
-                    g_DomainCurrentPage = g_DomainPage;
+                    _gDomainCurrentPage = _gDomainPage;
                 }
 
-                updateTotalDomainUI();
-                getPageDomain();
-                udpdatePageDomainUI();
+                UpdateTotalDomainUi();
+                GetPageDomain();
+                UdpdatePageDomainUi();
             }
         }
 
         private void button_domainLastPage_Click(object sender, EventArgs e)
         {
-            int nCount = initDomain();
+            int nCount = InitDomain();
             if (nCount >= 0)
             {
-                g_DomainCount = nCount;
-                if (g_DomainCount % g_DomainPageSize == 0)
+                _gDomainCount = nCount;
+                if (_gDomainCount % GDomainPageSize == 0)
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize;
+                    _gDomainPage = _gDomainCount / GDomainPageSize;
                 }
                 else
                 {
-                    g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                    _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                 }
 
-                g_DomainCurrentPage = g_DomainPage;
+                _gDomainCurrentPage = _gDomainPage;
 
-                updateTotalDomainUI();
-                getPageDomain();
-                udpdatePageDomainUI();
+                UpdateTotalDomainUi();
+                GetPageDomain();
+                UdpdatePageDomainUi();
             }
         }
 
@@ -1004,27 +965,27 @@ namespace FK域名检测工具管理器
                 {
                     nSupportPage = 0;
                 }
-                if (nSupportPage >= g_DomainPage) { nSupportPage = g_DomainPage; }
+                if (nSupportPage >= _gDomainPage) { nSupportPage = _gDomainPage; }
                 if (nSupportPage <= 1) { nSupportPage = 1; }
 
-                g_DomainCurrentPage = nSupportPage;
+                _gDomainCurrentPage = nSupportPage;
 
-                int nCount = initDomain();
+                int nCount = InitDomain();
                 if (nCount >= 0)
                 {
-                    g_DomainCount = nCount;
-                    if (g_DomainCount % g_DomainPageSize == 0)
+                    _gDomainCount = nCount;
+                    if (_gDomainCount % GDomainPageSize == 0)
                     {
-                        g_DomainPage = g_DomainCount / g_DomainPageSize;
+                        _gDomainPage = _gDomainCount / GDomainPageSize;
                     }
                     else
                     {
-                        g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                        _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                     }
 
-                    updateTotalDomainUI();
-                    getPageDomain();
-                    udpdatePageDomainUI();
+                    UpdateTotalDomainUi();
+                    GetPageDomain();
+                    UdpdatePageDomainUi();
                 }
             }
         }
@@ -1033,31 +994,31 @@ namespace FK域名检测工具管理器
         private void button_createDomain_Click(object sender, EventArgs e)
         {
             DomainInfo ds = new DomainInfo();
-            ds.Product = this.companyName;
-            List<string> checkPointList = getCheckPointNameList();
+            ds.Product = this._companyName;
+            List<string> checkPointList = GetCheckPointNameList();
             if (checkPointList.Count <= 0) {
                 MessageBox.Show("当前没有有效监测点，无法创建域名，请先创建监测点");
                 return;
             }
-            createDomain form = new createDomain(ds, checkPointList,this.userName, false);
+            createDomain form = new createDomain(ds, checkPointList,this._userName, false);
             if (form.ShowDialog() == DialogResult.OK)
             {
-                int nCount = initDomain();
+                int nCount = InitDomain();
                 if (nCount >= 0)
                 {
-                    g_DomainCount = nCount;
-                    if (g_DomainCount % g_DomainPageSize == 0)
+                    _gDomainCount = nCount;
+                    if (_gDomainCount % GDomainPageSize == 0)
                     {
-                        g_DomainPage = g_DomainCount / g_DomainPageSize;
+                        _gDomainPage = _gDomainCount / GDomainPageSize;
                     }
                     else
                     {
-                        g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                        _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                     }
 
-                    updateTotalDomainUI();
-                    getPageDomain();
-                    udpdatePageDomainUI();
+                    UpdateTotalDomainUi();
+                    GetPageDomain();
+                    UdpdatePageDomainUi();
                 }
             }
         }
@@ -1089,7 +1050,6 @@ namespace FK域名检测工具管理器
                 DataGridViewButtonCell cell = (DataGridViewButtonCell)this.dataGridView_domain.SelectedCells[0];
                 Clipboard.SetDataObject(cell.Value);
                 label_domain_copyInfo.Text = "已复制  " + cell.Value.ToString() + "  到剪切板，按Ctrl+V可粘贴";
-                return;
             }
             // 修改本域名
             else if (selectColumn == modifyColumn)
@@ -1124,36 +1084,34 @@ namespace FK域名检测工具管理器
                 ds.Creator = this.dataGridView_domain.Rows[selectRow].Cells["Column_domain_creater"].Value.ToString();
                 ds.UpdateDate = this.dataGridView_domain.Rows[selectRow].Cells["Column_domain_createTime"].Value.ToString();
                 ds.Comment = this.dataGridView_domain.Rows[selectRow].Cells["Column_domain_remark"].Value.ToString();
-                List<string> checkPointList = getCheckPointNameList();
+                List<string> checkPointList = GetCheckPointNameList();
                 if (checkPointList.Count <= 0)
                 {
                     MessageBox.Show("当前没有有效监测点，无法修改域名，请先创建监测点");
-                    return;
                 }
                 else{
-                    createDomain form = new createDomain(ds, checkPointList, this.userName, true);
+                    createDomain form = new createDomain(ds, checkPointList, this._userName, true);
                     if (form.ShowDialog() == DialogResult.OK)
                     {
-                        int nCount = initDomain();
+                        int nCount = InitDomain();
                         if (nCount >= 0)
                         {
-                            g_DomainCount = nCount;
-                            if (g_DomainCount % g_DomainPageSize == 0)
+                            _gDomainCount = nCount;
+                            if (_gDomainCount % GDomainPageSize == 0)
                             {
-                                g_DomainPage = g_DomainCount / g_DomainPageSize;
+                                _gDomainPage = _gDomainCount / GDomainPageSize;
                             }
                             else
                             {
-                                g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                                _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                             }
 
-                            updateTotalDomainUI();
-                            getPageDomain();
-                            udpdatePageDomainUI();
+                            UpdateTotalDomainUi();
+                            GetPageDomain();
+                            UdpdatePageDomainUi();
                         }
                     }
                 }
-                return;
             }
             // 删除本域名
             else if (selectColumn == deleteColumn)
@@ -1174,34 +1132,33 @@ namespace FK域名检测工具管理器
                     {
                         DomainIndex = domainIndex
                     };
-                    var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                    var apiPath = "http://" + ip + "/v1/DeleteDomain";
+                    //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                    var apiPath = Api.DeleteDomain;
                     var result = request.Execute<DeleteDomainResponse>(apiPath, deleteDomainRequest.ToJson(), "POST");
                     if (result is string)
                     {
                         MessageBox.Show("错误：" + result);
                     }
                     else {
-                        int nCount = initDomain();
+                        int nCount = InitDomain();
                         if (nCount >= 0)
                         {
-                            g_DomainCount = nCount;
-                            if (g_DomainCount % g_DomainPageSize == 0)
+                            _gDomainCount = nCount;
+                            if (_gDomainCount % GDomainPageSize == 0)
                             {
-                                g_DomainPage = g_DomainCount / g_DomainPageSize;
+                                _gDomainPage = _gDomainCount / GDomainPageSize;
                             }
                             else
                             {
-                                g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                                _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                             }
 
-                            updateTotalDomainUI();
-                            getPageDomain();
-                            udpdatePageDomainUI();
+                            UpdateTotalDomainUi();
+                            GetPageDomain();
+                            UdpdatePageDomainUi();
                         }
                     }
                 }
-                return;
             }
             // 修改域名状态
             else if (selectColumn == checkStatusColumn) 
@@ -1238,32 +1195,31 @@ namespace FK域名检测工具管理器
                     DomainIndex = domainIndex,
                     IsNeedCheck = isNeedCheck
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/UpdateDomainChecked";
+                //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = Api.UpdateDomainChecked;
                 var result = request.Execute<UpdateDomainCheckedResponse>(apiPath, updateDomainCheckedRequest.ToJson(), "POST");
                 if (result is string)
                 {
                     MessageBox.Show("错误：" + result);
-                    return;
                 }
                 else {
                     // 刷新本页面
-                    int nCount = initDomain();
+                    int nCount = InitDomain();
                     if (nCount >= 0)
                     {
-                        g_DomainCount = nCount;
-                        if (g_DomainCount % g_DomainPageSize == 0)
+                        _gDomainCount = nCount;
+                        if (_gDomainCount % GDomainPageSize == 0)
                         {
-                            g_DomainPage = g_DomainCount / g_DomainPageSize;
+                            _gDomainPage = _gDomainCount / GDomainPageSize;
                         }
                         else
                         {
-                            g_DomainPage = g_DomainCount / g_DomainPageSize + 1;
+                            _gDomainPage = _gDomainCount / GDomainPageSize + 1;
                         }
 
-                        updateTotalDomainUI();
-                        getPageDomain();
-                        udpdatePageDomainUI();
+                        UpdateTotalDomainUi();
+                        GetPageDomain();
+                        UdpdatePageDomainUi();
                     }
                 }
             }
@@ -1271,37 +1227,35 @@ namespace FK域名检测工具管理器
 
         private void dataGridView_domain_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.ColumnIndex == this.dataGridView_domain.Columns["Column_domain_checkPoint"].Index)
+            if (e.ColumnIndex != this.dataGridView_domain.Columns["Column_domain_checkPoint"].Index) return;
+            if (e.Value == null)
             {
-                if (e.Value == null)
-                {
-                    return;
-                }
-
-                string product = this.dataGridView_domain.Rows[e.RowIndex].Cells["Column_domain_company"].Value.ToString();
-                e.Value = product + "_" + e.Value;
+                return;
             }
+
+            string product = this.dataGridView_domain.Rows[e.RowIndex].Cells["Column_domain_company"].Value.ToString();
+            e.Value = product + "_" + e.Value;
         }
 
         #endregion
 
 
-        #region CHECKPOINT
+ #region CHECKPOINT
 
-        private void testInitCP() {
+        private void TestInitCp() {
             Random rnd = new Random();
-            g_CPCount = rnd.Next(1, 30000);
-            if (g_CPCount % g_CPPageSize == 0)
+            _gCpCount = rnd.Next(1, 30000);
+            if (_gCpCount % GCpPageSize == 0)
             {
-                g_CPPage = g_CPCount / g_CPPageSize;
+                _gCpPage = _gCpCount / GCpPageSize;
             }
             else
             {
-                g_CPPage = g_CPCount / g_CPPageSize + 1;
+                _gCpPage = _gCpCount / GCpPageSize + 1;
             }
         }
 
-        private int initCP()
+        private int InitCp()
         {
             var request = new Request();
             var getCPCountRequest = new GetCPCountRequest
@@ -1309,33 +1263,31 @@ namespace FK域名检测工具管理器
                 Product = comboBox_company.Text,
                 Creator = textBox_CPCreater.Text
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetCheckpointsCount";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetCheckpointsCount;
             var result = request.Execute<GetCPCountResponse>(apiPath, getCPCountRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
                 return -1;
             }
-            else
-            {
-                var getCPCountResponse = (GetCPCountResponse)result;
-                return getCPCountResponse.TotalCount;
-            }
+
+            var getCPCountResponse = (GetCPCountResponse)result;
+            return getCPCountResponse.TotalCount;
         }
 
-        private void updateTotalCPUI() {
-            this.label_totalCPCount.Text = g_CPCount.ToString();
-            this.label_CPPageCount.Text = g_CPPage.ToString();
-            if (g_CPCurrentPage <= 0)
+        private void UpdateTotalCpui() {
+            this.label_totalCPCount.Text = _gCpCount.ToString();
+            this.label_CPPageCount.Text = _gCpPage.ToString();
+            if (_gCpCurrentPage <= 0)
             {
-                g_CPCurrentPage = 1;
+                _gCpCurrentPage = 1;
             }
-            if (g_CPCurrentPage > g_CPPage)
+            if (_gCpCurrentPage > _gCpPage)
             {
-                g_CPCurrentPage = g_CPPage;
+                _gCpCurrentPage = _gCpPage;
             }
-            this.textBox_currentCPPage.Text = g_CPCurrentPage.ToString();
+            this.textBox_currentCPPage.Text = _gCpCurrentPage.ToString();
         }
 
         private void testGetPageCP() {
@@ -1358,158 +1310,152 @@ namespace FK域名检测工具管理器
             */
         }
 
-        private void getPageCP() {
-            g_CPStructList.Clear();
+        private void GetPageCp() {
+            _gCpStructList.Clear();
 
             var request = new Request();
             var GetPageCPRequest = new GetPageCPRequest
             {
                 Product = comboBox_company.Text,
                 Creator = textBox_CPCreater.Text,
-                Page = g_CPCurrentPage
+                Page = _gCpCurrentPage
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetPageCheckpoint";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetPageCheckpoint;
             var result = request.Execute<GetPageCPResponse>(apiPath, GetPageCPRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
-                return;
             }
             else
             {
-                var getPageCPResponse = (GetPageCPResponse)result;
-                for (int i = 0; i < getPageCPResponse.CPInfoList.Length; ++i)
+                var getPageCpResponse = (GetPageCPResponse)result;
+                foreach (var t in getPageCpResponse.CPInfoList)
                 {
-                    g_CPStructList.Add(getPageCPResponse.CPInfoList[i]);
+                    _gCpStructList.Add(t);
                 }
-                return;
             }
         }
 
-        private void udpdatePageCPUI() {
-            var bindingList = new BindingList<CPInfo>(g_CPStructList);
+        private void UpdatePageCpui() {
+            var bindingList = new BindingList<CPInfo>(_gCpStructList);
             var source = new BindingSource(bindingList, null);
             this.dataGridView_checkpoint.DataSource = source;
         }
         // 搜索检查点
         private void button_CPResearch_Click(object sender, EventArgs e)
         {
-            int nCount = initCP();
-            if (nCount >= 0)
+            int nCount = InitCp();
+            if (nCount < 0) return;
+            _gCpCount = nCount;
+            if (_gCpCount % GCpPageSize == 0)
             {
-                g_CPCount = nCount;
-                if (g_CPCount % g_CPPageSize == 0)
-                {
-                    g_CPPage = g_CPCount / g_CPPageSize;
-                }
-                else
-                {
-                    g_CPPage = g_CPCount / g_CPPageSize + 1;
-                }
-                updateTotalCPUI();
-                getPageCP();
-                udpdatePageCPUI();
+                _gCpPage = _gCpCount / GCpPageSize;
             }
+            else
+            {
+                _gCpPage = _gCpCount / GCpPageSize + 1;
+            }
+            UpdateTotalCpui();
+            GetPageCp();
+            UpdatePageCpui();
         }
 
         private void button_CPFirstPage_Click(object sender, EventArgs e)
         {
-            int nCount = initCP();
-            if (nCount >= 0)
+            int nCount = InitCp();
+            if (nCount < 0) return;
+            _gCpCount = nCount;
+            if (_gCpCount % GCpPageSize == 0)
             {
-                g_CPCount = nCount;
-                if (g_CPCount % g_CPPageSize == 0)
-                {
-                    g_CPPage = g_CPCount / g_CPPageSize;
-                }
-                else
-                {
-                    g_CPPage = g_CPCount / g_CPPageSize + 1;
-                }
-
-                g_CPCurrentPage = 1;
-
-                updateTotalCPUI();
-                getPageCP();
-                udpdatePageCPUI();
+                _gCpPage = _gCpCount / GCpPageSize;
             }
+            else
+            {
+                _gCpPage = _gCpCount / GCpPageSize + 1;
+            }
+
+            _gCpCurrentPage = 1;
+
+            UpdateTotalCpui();
+            GetPageCp();
+            UpdatePageCpui();
         }
 
         private void button_CPPrevPage_Click(object sender, EventArgs e)
         {
-            int nCount = initCP();
+            int nCount = InitCp();
             if (nCount >= 0)
             {
-                g_CPCount = nCount;
-                if (g_CPCount % g_CPPageSize == 0)
+                _gCpCount = nCount;
+                if (_gCpCount % GCpPageSize == 0)
                 {
-                    g_CPPage = g_CPCount / g_CPPageSize;
+                    _gCpPage = _gCpCount / GCpPageSize;
                 }
                 else
                 {
-                    g_CPPage = g_CPCount / g_CPPageSize + 1;
+                    _gCpPage = _gCpCount / GCpPageSize + 1;
                 }
 
-                g_CPCurrentPage -= 1;
-                if (g_CPCurrentPage <= 1)
+                _gCpCurrentPage -= 1;
+                if (_gCpCurrentPage <= 1)
                 {
-                    g_CPCurrentPage = 1;
+                    _gCpCurrentPage = 1;
                 }
 
-                updateTotalCPUI();
-                getPageCP();
-                udpdatePageCPUI();
+                UpdateTotalCpui();
+                GetPageCp();
+                UpdatePageCpui();
             }
         }
 
         private void button_CPNextPage_Click(object sender, EventArgs e)
         {
-            int nCount = initCP();
+            int nCount = InitCp();
             if (nCount >= 0)
             {
-                g_CPCount = nCount;
-                if (g_CPCount % g_CPPageSize == 0)
+                _gCpCount = nCount;
+                if (_gCpCount % GCpPageSize == 0)
                 {
-                    g_CPPage = g_CPCount / g_CPPageSize;
+                    _gCpPage = _gCpCount / GCpPageSize;
                 }
                 else
                 {
-                    g_CPPage = g_CPCount / g_CPPageSize + 1;
+                    _gCpPage = _gCpCount / GCpPageSize + 1;
                 }
 
-                g_CPCurrentPage += 1;
-                if (g_CPCurrentPage >= g_CPPage)
+                _gCpCurrentPage += 1;
+                if (_gCpCurrentPage >= _gCpPage)
                 {
-                    g_CPCurrentPage = g_CPPage;
+                    _gCpCurrentPage = _gCpPage;
                 }
 
-                updateTotalCPUI();
-                getPageCP();
-                udpdatePageCPUI();
+                UpdateTotalCpui();
+                GetPageCp();
+                UpdatePageCpui();
             }
         }
 
         private void button_CPLastPage_Click(object sender, EventArgs e)
         {
-            int nCount = initCP();
+            int nCount = InitCp();
             if (nCount >= 0)
             {
-                g_CPCount = nCount;
-                if (g_CPCount % g_CPPageSize == 0)
+                _gCpCount = nCount;
+                if (_gCpCount % GCpPageSize == 0)
                 {
-                    g_CPPage = g_CPCount / g_CPPageSize;
+                    _gCpPage = _gCpCount / GCpPageSize;
                 }
                 else
                 {
-                    g_CPPage = g_CPCount / g_CPPageSize + 1;
+                    _gCpPage = _gCpCount / GCpPageSize + 1;
                 }
 
-                g_CPCurrentPage = g_CPPage;
+                _gCpCurrentPage = _gCpPage;
 
-                updateTotalCPUI();
-                getPageCP();
-                udpdatePageCPUI();
+                UpdateTotalCpui();
+                GetPageCp();
+                UpdatePageCpui();
             }
         }
 
@@ -1533,64 +1479,60 @@ namespace FK域名检测工具管理器
                 {
                     nSupportPage = 0;
                 }
-                if (nSupportPage >= g_CPPage) { nSupportPage = g_CPPage; }
+                if (nSupportPage >= _gCpPage) { nSupportPage = _gCpPage; }
                 if (nSupportPage <= 1) { nSupportPage = 1; }
 
-                g_CPCurrentPage = nSupportPage;
+                _gCpCurrentPage = nSupportPage;
 
-                int nCount = initCP();
-                if (nCount >= 0)
+                int nCount = InitCp();
+                if (nCount < 0) return;
+                _gCpCount = nCount;
+                if (_gCpCount % GCpPageSize == 0)
                 {
-                    g_CPCount = nCount;
-                    if (g_CPCount % g_CPPageSize == 0)
-                    {
-                        g_CPPage = g_CPCount / g_CPPageSize;
-                    }
-                    else
-                    {
-                        g_CPPage = g_CPCount / g_CPPageSize + 1;
-                    }
-                    updateTotalCPUI();
-                    getPageCP();
-                    udpdatePageCPUI();
+                    _gCpPage = _gCpCount / GCpPageSize;
                 }
+                else
+                {
+                    _gCpPage = _gCpCount / GCpPageSize + 1;
+                }
+                UpdateTotalCpui();
+                GetPageCp();
+                UpdatePageCpui();
             }
         }
 
         private void button_createCP_Click(object sender, EventArgs e)
         {
             CPInfo cps = new CPInfo();
-            cps.Product = this.companyName;
-            createCP form = new createCP(cps, this.userName, false);
+            cps.Product = this._companyName;
+            createCP form = new createCP(cps, this._userName, false);
             if (form.ShowDialog() == DialogResult.OK) {
-                int nCount = initCP();
+                int nCount = InitCp();
                 if (nCount >= 0)
                 {
-                    g_CPCount = nCount;
-                    if (g_CPCount % g_CPPageSize == 0)
+                    _gCpCount = nCount;
+                    if (_gCpCount % GCpPageSize == 0)
                     {
-                        g_CPPage = g_CPCount / g_CPPageSize;
+                        _gCpPage = _gCpCount / GCpPageSize;
                     }
                     else
                     {
-                        g_CPPage = g_CPCount / g_CPPageSize + 1;
+                        _gCpPage = _gCpCount / GCpPageSize + 1;
                     }
-                    updateTotalCPUI();
-                    getPageCP();
-                    udpdatePageCPUI();
+                    UpdateTotalCpui();
+                    GetPageCp();
+                    UpdatePageCpui();
                 }
 
                 this.comboBox_checkpointName.Items.Clear();
-                List<string> checkPointList = getCheckPointNameList();
-                if (checkPointList.Count > 0)
+                List<string> checkPointList = GetCheckPointNameList();
+                if (checkPointList.Count <= 0) return;
+                this.comboBox_checkpointName.Items.Add("全部");
+                foreach (var t in checkPointList)
                 {
-                    this.comboBox_checkpointName.Items.Add("全部");
-                    for (int i = 0; i < checkPointList.Count; i++)
-                    {
-                        this.comboBox_checkpointName.Items.Add(checkPointList[i]);
-                    }
-                    this.comboBox_checkpointName.SelectedIndex = 0;
+                    this.comboBox_checkpointName.Items.Add(t);
                 }
+                this.comboBox_checkpointName.SelectedIndex = 0;
             }
         }
 
@@ -1623,71 +1565,20 @@ namespace FK域名检测工具管理器
                 label_checkpoint_copyinfo.Text = "已复制  " + cell.Value.ToString() + "  到剪切板，按Ctrl+V可粘贴";
                 return;
             }
-            else if (selectColumn == CPStringColumn)
+
+            if (selectColumn == CPStringColumn)
             {
                 DataGridViewButtonCell cell = (DataGridViewButtonCell)this.dataGridView_checkpoint.SelectedCells[0];
                 Clipboard.SetDataObject(cell.Value);
                 label_checkpoint_copyinfo.Text = "已复制  " + cell.Value.ToString() + "  到剪切板，按Ctrl+V可粘贴";
-                return;
             }
             // 修改本域名
-            else if (selectColumn == ModifyColumn)
+            else
             {
-                CPInfo cps = new CPInfo();
-                cps.Product = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_company"].Value.ToString();
-                int checkpointIndex = 0;
-                try
+                if (selectColumn == ModifyColumn)
                 {
-                    checkpointIndex = Int32.Parse(this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_name"].Value.ToString());
-                }
-                catch (FormatException)
-                {
-                    checkpointIndex = 0;
-                }
-
-                cps.CheckpointIndex = checkpointIndex;
-                cps.Creator = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_creator"].Value.ToString();
-                cps.CheckPath = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_Path"].Value.ToString();
-                cps.CheckString = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_string"].Value.ToString();
-                createCP form = new createCP(cps, this.userName, true);
-                if (form.ShowDialog() == DialogResult.OK)
-                {
-                    int nCount = initCP();
-                    if (nCount >= 0)
-                    {
-                        g_CPCount = nCount;
-                        if (g_CPCount % g_CPPageSize == 0)
-                        {
-                            g_CPPage = g_CPCount / g_CPPageSize;
-                        }
-                        else
-                        {
-                            g_CPPage = g_CPCount / g_CPPageSize + 1;
-                        }
-                        updateTotalCPUI();
-                        getPageCP();
-                        udpdatePageCPUI();
-                    }
-
-                    this.comboBox_checkpointName.Items.Clear();
-                    List<string> checkPointList = getCheckPointNameList();
-                    if (checkPointList.Count > 0)
-                    {
-                        this.comboBox_checkpointName.Items.Add("全部");
-                        for (int i = 0; i < checkPointList.Count; i++)
-                        {
-                            this.comboBox_checkpointName.Items.Add(checkPointList[i]);
-                        }
-                        this.comboBox_checkpointName.SelectedIndex = 0;
-                    }
-                }
-                return;
-            }
-            // 删除本域名
-            else if (selectColumn == DeleteColumn)
-            {
-                if (MessageBox.Show("确定删除吗？", "提示", MessageBoxButtons.OKCancel) == DialogResult.OK)
-                {
+                    CPInfo cps = new CPInfo();
+                    cps.Product = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_company"].Value.ToString();
                     int checkpointIndex = 0;
                     try
                     {
@@ -1698,68 +1589,116 @@ namespace FK域名检测工具管理器
                         checkpointIndex = 0;
                     }
 
-                    var request = new Request();
-                    var deleteCPRequest = new DeleteCPRequest
+                    cps.CheckpointIndex = checkpointIndex;
+                    cps.Creator = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_creator"].Value.ToString();
+                    cps.CheckPath = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_Path"].Value.ToString();
+                    cps.CheckString = this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_string"].Value.ToString();
+                    createCP form = new createCP(cps, this._userName, true);
+                    if (form.ShowDialog() == DialogResult.OK)
                     {
-                        CheckpointIndex = checkpointIndex
-                    };
-                    var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                    var apiPath = "http://" + ip + "/v1/DeleteCheckpoint";
-                    var result = request.Execute<DeleteCPResponse>(apiPath, deleteCPRequest.ToJson(), "POST");
-                    if (result is string)
-                    {
-                        MessageBox.Show("错误：" + result);
-                    }
-                    else
-                    {
-                        int nCount = initCP();
+                        int nCount = InitCp();
                         if (nCount >= 0)
                         {
-                            g_CPCount = nCount;
-                            if (g_CPCount % g_CPPageSize == 0)
+                            _gCpCount = nCount;
+                            if (_gCpCount % GCpPageSize == 0)
                             {
-                                g_CPPage = g_CPCount / g_CPPageSize;
+                                _gCpPage = _gCpCount / GCpPageSize;
                             }
                             else
                             {
-                                g_CPPage = g_CPCount / g_CPPageSize + 1;
+                                _gCpPage = _gCpCount / GCpPageSize + 1;
                             }
-                            updateTotalCPUI();
-                            getPageCP();
-                            udpdatePageCPUI();
+                            UpdateTotalCpui();
+                            GetPageCp();
+                            UpdatePageCpui();
+                        }
+
+                        this.comboBox_checkpointName.Items.Clear();
+                        List<string> checkPointList = GetCheckPointNameList();
+                        if (checkPointList.Count <= 0) return;
+                        this.comboBox_checkpointName.Items.Add("全部");
+                        
+                        foreach (var t in checkPointList)
+                        {
+                            this.comboBox_checkpointName.Items.Add(t);
+                        }
+                        this.comboBox_checkpointName.SelectedIndex = 0;
+                    }
+                    return;
+                }
+                // 删除本域名
+                if (selectColumn == DeleteColumn)
+                {
+                    if (MessageBox.Show("确定删除吗？", "提示", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                    {
+                        int checkpointIndex = 0;
+                        try
+                        {
+                            checkpointIndex = Int32.Parse(this.dataGridView_checkpoint.Rows[selectRow].Cells["Column_CP_name"].Value.ToString());
+                        }
+                        catch (FormatException)
+                        {
+                            checkpointIndex = 0;
+                        }
+
+                        var request = new Request();
+                        var deleteCPRequest = new DeleteCPRequest
+                        {
+                            CheckpointIndex = checkpointIndex
+                        };
+                        //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                        var apiPath = Api.DeleteCheckpoint;
+                        var result = request.Execute<DeleteCPResponse>(apiPath, deleteCPRequest.ToJson(), "POST");
+                        if (result is string)
+                        {
+                            MessageBox.Show("错误：" + result);
+                        }
+                        else
+                        {
+                            int nCount = InitCp();
+                            if (nCount < 0) return;
+                            _gCpCount = nCount;
+                            if (_gCpCount % GCpPageSize == 0)
+                            {
+                                _gCpPage = _gCpCount / GCpPageSize;
+                            }
+                            else
+                            {
+                                _gCpPage = _gCpCount / GCpPageSize + 1;
+                            }
+                            UpdateTotalCpui();
+                            GetPageCp();
+                            UpdatePageCpui();
                         }
                     }
                 }
-                return;
             }
         }
 
         private void dataGridView_checkpoint_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
-            if (e.ColumnIndex == this.dataGridView_checkpoint.Columns["Column_CP_fakename"].Index)
+            if (e.ColumnIndex != this.dataGridView_checkpoint.Columns["Column_CP_fakename"].Index) return;
+            if (e.Value == null)
             {
-                if (e.Value == null)
-                {
-                    return;
-                }
-
-                string product = this.dataGridView_checkpoint.Rows[e.RowIndex].Cells["Column_CP_company"].Value.ToString();
-                e.Value = product + "_" + e.Value;
+                return;
             }
+
+            string product = this.dataGridView_checkpoint.Rows[e.RowIndex].Cells["Column_CP_company"].Value.ToString();
+            e.Value = product + "_" + e.Value;
         }
         #endregion
 
         private void button_freshActiveClient_Click(object sender, EventArgs e)
         {
-            g_ActiveClientList.Clear();
+            _gActiveClientList.Clear();
 
             var request = new Request();
             var getActiveClientsRequest = new GetActiveClientsRequest
             {
-                Product = this.companyName
+                Product = this._companyName
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetActiveClients";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetActiveClients;
             var result = request.Execute<GetActiveClientsResponse>(apiPath, getActiveClientsRequest.ToJson(), "POST");
             if (result is string)
             {
@@ -1771,9 +1710,9 @@ namespace FK域名检测工具管理器
                 var getActiveClientsResponse = (GetActiveClientsResponse)result;
                 if (string.IsNullOrEmpty(getActiveClientsResponse.Error))
                 {
-                    for (int i = 0; i < getActiveClientsResponse.ActiveClientInfos.Length; ++i)
+                    foreach (var t in getActiveClientsResponse.ActiveClientInfos)
                     {
-                        g_ActiveClientList.Add(getActiveClientsResponse.ActiveClientInfos[i]);
+                        _gActiveClientList.Add(t);
                     }
                 }
                 else {
@@ -1782,12 +1721,12 @@ namespace FK域名检测工具管理器
                 }
             }
 
-            udpdateActiveClientUI();
+            UpdateActiveClientUi();
         }
 
-        private void udpdateActiveClientUI()
+        private void UpdateActiveClientUi()
         {
-            var bindingList = new BindingList<ActiveClientInfo>(g_ActiveClientList);
+            var bindingList = new BindingList<ActiveClientInfo>(_gActiveClientList);
             var source = new BindingSource(bindingList, null);
             this.dataGridView_activeClient.DataSource = source;
         }
@@ -1799,26 +1738,26 @@ namespace FK域名检测工具管理器
             {
                 row.Selected = false;
             }
-            g_IPListInfoList.Clear();
+            _gIpListInfoList.Clear();
 
-            if (!getIPListFromServer())
+            if (!GetIpListFromServer())
             {
                 return;
             }
 
-            updateIPInfoUI();
+            UpdateIpInfoUi();
         }
 
-        private bool getIPListFromServer() {
+        private bool GetIpListFromServer() {
             var request = new Request();
-            var getIPListRequest = new GetIPListRequest
+            var getIpListRequest = new GetIPListRequest
             {
-                Username = this.userName,
-                Product = this.companyName
+                Username = this._userName,
+                Product = this._companyName
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetIPLists";
-            var result = request.Execute<GetIPListResponse>(apiPath, getIPListRequest.ToJson(), "POST");
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetIpList;
+            var result = request.Execute<GetIPListResponse>(apiPath, getIpListRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
@@ -1829,9 +1768,9 @@ namespace FK域名检测工具管理器
                 var getIPListResponse = (GetIPListResponse)result;
                 if (string.IsNullOrEmpty(getIPListResponse.Error))
                 {
-                    for (int i = 0; i < getIPListResponse.IPListInfos.Length; ++i)
+                    foreach (var t in getIPListResponse.IPListInfos)
                     {
-                        g_IPListInfoList.Add(getIPListResponse.IPListInfos[i]);
+                        _gIpListInfoList.Add(t);
                     }
                 }
                 else
@@ -1842,9 +1781,9 @@ namespace FK域名检测工具管理器
             }
             return true;
         }
-        private void updateIPInfoUI() 
+        private void UpdateIpInfoUi() 
         {
-            var bindingList = new BindingList<IPListInfo>(g_IPListInfoList);
+            var bindingList = new BindingList<IPListInfo>(_gIpListInfoList);
             var source = new BindingSource(bindingList, null);
             this.dataGridView_iplist.DataSource = source;
         }
@@ -1957,8 +1896,8 @@ namespace FK域名检测工具管理器
                     Product = sProduct,
                     CustomIndex = nCustomIndex
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/UpdateIPList";
+                //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = Api.UpdateIpList;
                 var result = request.Execute<UpdateIPListResponse>(apiPath, updateIPListRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -1970,57 +1909,54 @@ namespace FK域名检测工具管理器
                     {
                         row.Selected = false;
                     }
-                    g_IPListInfoList.Clear();
-                    if (!getIPListFromServer())
+                    _gIpListInfoList.Clear();
+                    if (!GetIpListFromServer())
                     {
                         return;
                     }
-                    updateIPInfoUI();
+                    UpdateIpInfoUi();
                     MessageBox.Show("本行数据更新完毕.");
                 }
             }
             // 删除
             else if (selectColumn == DeleteColumn)
             {
-                if (MessageBox.Show("确定删除吗？", "提示", MessageBoxButtons.OKCancel) == DialogResult.OK)
+                if (MessageBox.Show("确定删除吗？", "提示", MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+                int ipListIndex = 0;
+                try
                 {
-                    int IPListIndex = 0;
-                    try
-                    {
-                        IPListIndex = Int32.Parse(this.dataGridView_iplist.Rows[selectRow].Cells["Column_index"].Value.ToString());
-                    }
-                    catch (FormatException)
-                    {
-                        IPListIndex = 0;
-                    }
-
-                    var request = new Request();
-                    var deleteIPListRequest = new DeleteIPListRequest
-                    {
-                        Index = IPListIndex
-                    };
-                    var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                    var apiPath = "http://" + ip + "/v1/DeleteIPList";
-                    var result = request.Execute<DeleteIPListResponse>(apiPath, deleteIPListRequest.ToJson(), "POST");
-                    if (result is string)
-                    {
-                        MessageBox.Show("错误：" + result);
-                    }
-                    else
-                    {
-                        foreach (DataGridViewRow row in dataGridView_iplist.Rows)
-                        {
-                            row.Selected = false;
-                        }
-                        g_IPListInfoList.Clear();
-                        if (!getIPListFromServer())
-                        {
-                            return;
-                        }
-                        updateIPInfoUI();
-                    }
+                    ipListIndex = Int32.Parse(this.dataGridView_iplist.Rows[selectRow].Cells["Column_index"].Value.ToString());
                 }
-                return;
+                catch (FormatException)
+                {
+                    ipListIndex = 0;
+                }
+
+                var request = new Request();
+                var deleteIpListRequest = new DeleteIPListRequest
+                {
+                    Index = ipListIndex
+                };
+                //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = Api.DeleteIpList;
+                var result = request.Execute<DeleteIPListResponse>(apiPath, deleteIpListRequest.ToJson(), "POST");
+                if (result is string)
+                {
+                    MessageBox.Show("错误：" + result);
+                }
+                else
+                {
+                    foreach (DataGridViewRow row in dataGridView_iplist.Rows)
+                    {
+                        row.Selected = false;
+                    }
+                    _gIpListInfoList.Clear();
+                    if (!GetIpListFromServer())
+                    {
+                        return;
+                    }
+                    UpdateIpInfoUi();
+                }
             }
         }
 
@@ -2033,27 +1969,21 @@ namespace FK域名检测工具管理器
         {
             selectProduct form = new selectProduct();
             // NEW ADD
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                if (!string.IsNullOrEmpty(form.productList))
-                {
+            if (form.ShowDialog() != DialogResult.OK) return;
+            if (string.IsNullOrEmpty(form.productList)) return;
             // END OF NEW ADD
-                    string messageInfo = "确定删除 " + form.productList + " 全部域名吗？";
+            var messageInfo = "确定删除 " + form.productList + " 全部域名吗？";
 
-                    if (MessageBox.Show(messageInfo, "警告", MessageBoxButtons.OKCancel) == DialogResult.OK)
-                    {
-                        // 实际删除
-                        string result = DeleteAllDomainsByProductList(form.productList);
-                        if (string.IsNullOrEmpty(result))
-                        {
-                            MessageBox.Show("删除成功，请刷新...");
-                        }
-                        else
-                        {
-                            MessageBox.Show("删除失败，原因：" + result);
-                        }
-                    }
-                }
+            if (MessageBox.Show(messageInfo, "警告", MessageBoxButtons.OKCancel) != DialogResult.OK) return;
+            // 实际删除
+            var result = DeleteAllDomainsByProductList(form.productList);
+            if (string.IsNullOrEmpty(result))
+            {
+                MessageBox.Show("删除成功，请刷新...");
+            }
+            else
+            {
+                MessageBox.Show("删除失败，原因：" + result);
             }
         }
 
@@ -2063,12 +1993,12 @@ namespace FK域名检测工具管理器
             {
                 ProductList = productList
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/DeleteAllDomains";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.DeleteAllDomains;
             var result = request.Execute<DeleteAllDomainsResponse>(apiPath, ueleteAllDomainsRequest.ToJson(), "POST");
-            if (result is string)
+            if (result is string s)
             {
-                return (string)result;
+                return s;
             }
             else
             {
@@ -2091,23 +2021,22 @@ namespace FK域名检测工具管理器
             var request = new Request();
             string s = comboBox_domainCheckStatus.SelectedItem.ToString();
             int isNeedCheck = 0;
-            if (String.Compare(s, "需监测") == 0)
+            if (string.CompareOrdinal(s, "需监测") == 0)
             {
                 isNeedCheck = 1;
             }
             string checkpointIndex = "";
-            if (string.Compare(comboBox_checkpointName.Text, "全部") == 0)
+            if (string.CompareOrdinal(comboBox_checkpointName.Text, "全部") == 0)
             {
                 //checkpointIndex = "全部";
-                for (int i = 0; i < comboBox_checkpointName.Items.Count; i++)
+                foreach (var t in comboBox_checkpointName.Items)
                 {
-                    string oneItem = comboBox_checkpointName.GetItemText(comboBox_checkpointName.Items[i]);
-                    if (string.Compare(oneItem, "全部") != 0)
-                    {
-                        checkpointIndex += oneItem.Split('_')[1];
-                        checkpointIndex += ",";
-                    }
+                    var oneItem = comboBox_checkpointName.GetItemText(t);
+                    if (string.CompareOrdinal(oneItem, "全部") == 0) continue;
+                    checkpointIndex += oneItem.Split('_')[1];
+                    checkpointIndex += ",";
                 }
+
                 if (checkpointIndex.Length > 1)
                 {
                     checkpointIndex = checkpointIndex.Substring(0, checkpointIndex.Length - 1);
@@ -2130,14 +2059,13 @@ namespace FK域名检测工具管理器
                 IsNeedCheck = isNeedCheck,
                 Page = 917262936
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetPageDomain";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetPageDomain;
             var result = request.Execute<GetPageDomainResponse>(apiPath, getPageDomainRequest.ToJson(), "POST");
             if (result is string)
             {
                 MessageBox.Show("错误：" + result);
                 this.button_downloadAllDomains.Enabled = true;
-                return;
             }
             else
             {
@@ -2157,7 +2085,6 @@ namespace FK域名检测工具管理器
                 CsvFileUtility.SaveDataToCSVFile(allDomains, pathname, filename);
                 MessageBox.Show("文件 " + filename + " 下载完毕.", "提示");
                 this.button_downloadAllDomains.Enabled = true;
-                return;
             }
         }
     }

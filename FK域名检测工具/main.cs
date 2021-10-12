@@ -306,8 +306,8 @@ namespace FK域名检测工具
                 CustomIndex = this._customIndex,
                 Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV)
             };
-            var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-            var apiPath = "http://" + ip + "/v1/GetDomain";
+            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+            var apiPath = Api.GetDomain;
             var re = request.Execute<GetDomainResponse>(apiPath,
                 getDomainRequest.ToJson(), "POST");
             LogHelper.Debug("requestDomain请求返回");
@@ -469,8 +469,8 @@ namespace FK域名检测工具
                             Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                             Printscreen = new byte[0]
                         };
-                        var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                        var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                       // var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                        var apiPath = Api.SyncCheckResult;
                         LogHelper.Debug("checkDomain CURL失败数据上报开始");
                         var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
                         LogHelper.Debug("checkDomain CURL失败数据上报结束");
@@ -525,8 +525,8 @@ namespace FK域名检测工具
                             Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                             Printscreen = b
                         };
-                        var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                        var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                        //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                        var apiPath = Api.SyncCheckResult;
                         LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
                         var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
                         LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
@@ -554,8 +554,8 @@ namespace FK域名检测工具
                     Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                     Printscreen = new byte[0]
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/SyncCheckResult";
+                //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = Api.SyncCheckResult;
                 LogHelper.Debug($"checkDomain {apiPath} 数据上报开始");
                 var result = request.Execute<CheckDomainResultResponse>(apiPath, checkDomainResultRequest.ToJson(), "POST");
                 LogHelper.Debug($"checkDomain {apiPath} 数据上报结束");
