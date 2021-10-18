@@ -21,5 +21,11 @@
         public static string UpdateIpList => $"{Protocol}://{Ip}/v1/UpdateIPList";
         public static string DeleteIpList => $"{Protocol}://{Ip}/v1/DeleteIPList";
         public static string DeleteAllDomains => $"{Protocol}://{Ip}/v1/DeleteAllDomains";
+        public static string CreateDomain => $"{Protocol}://{Ip}/v1/CreateDomain";
+        public static string UpdateDomain => $"{Protocol}://{Ip}/v1/UpdateDomain";
+        public static string UpdateCheckpoint => $"{Protocol}://{Ip}/v1/UpdateCheckpoint";
+        public static string CreateCheckpoint => $"{Protocol}://{Ip}/v1/CreateCheckpoint";
+        
+
     }
 }

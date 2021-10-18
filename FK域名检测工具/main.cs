@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FK域名检测工具
@@ -18,6 +19,8 @@ namespace FK域名检测工具
         private readonly string _userName;
         private readonly string _companyName;
         private readonly int _customIndex;
+        private object _lock = new object();
+        private int _timer;
 
        
         public Main(string userName, string companyName, int customIndex)
@@ -27,6 +30,7 @@ namespace FK域名检测工具
             this._userName = userName;
             this._companyName = companyName;
             this._customIndex = customIndex;
+            Control.CheckForIllegalCrossThreadCalls = false;
 
             //HttpContext context = System.Web.HttpContext.Current;
             //HttpRuntime.Cache.Insert("context", context);
@@ -34,7 +38,33 @@ namespace FK域名检测工具
 
         private void main_Load(object sender, EventArgs e)
         {
-            this.label_company.Text = this._companyName;
+            // 心跳检测
+            Task.Factory.StartNew(() => {
+            while (true)
+            {
+                Thread.Sleep(5000);
+                if (_gMainThread != null)
+                {
+                    AddNoticeLog($"心跳检测：{_gMainThread.IsAlive}");
+                        if (!_gMainThread.IsAlive||_timer > 120)
+                        {
+                            _cs.Cancel(false);
+                            _cs.Token.Register(() =>
+                            {
+                                AddNoticeLog($"心跳重启:【IsAlive:{_gMainThread.IsAlive}】【_timer:{_timer}】");
+                                _gMainThread.Abort();
+                                _gMainThread = null;
+                                Action<object,EventArgs> ac = new Action<object, EventArgs>(button_start_Click);
+                                ac.Invoke(null,null);
+                            });
+                           
+                            
+                        }
+                       
+                    }
+                }
+            });
+           this.label_company.Text = this._companyName;
             this.label_account.Text = this._userName;
             this.label_mac.Text = CommonFunc.GetMac();
 
@@ -152,8 +182,21 @@ namespace FK域名检测工具
             int timeout = (int)paramList[0];
             string username = (string)paramList[1];
             LogHelper.Debug("循环开始前");
+            Task.Factory.StartNew(()=>
+            {
+                Thread.Sleep(1000);
+                lock (_lock)
+                {
+                    _timer++;
+                }
+                
+            });
             for (; ;)
             {
+                lock (_lock)
+                {
+                    _timer = 0;
+                }
                 Thread.Sleep(100);
                 LogHelper.Debug("sleep 100ms");
                 if (_cs.Token.IsCancellationRequested)
@@ -379,7 +422,7 @@ namespace FK域名检测工具
             var decryptedCheckPath = AesHelper.AesDecrypt(condition.CheckPath, AesHelper.AES_KEY, AesHelper.AES_IV);
             var decryptedCheckString = AesHelper.AesDecrypt(condition.CheckString, AesHelper.AES_KEY, AesHelper.AES_IV);
             if (!decryptedCheckDomain.StartsWith("http://") && !decryptedCheckDomain.StartsWith("https://"))
-                decryptedCheckDomain = "https://" + decryptedCheckDomain;
+                decryptedCheckDomain = "http://" + decryptedCheckDomain;
             if (!decryptedCheckPath.StartsWith("/"))
                 decryptedCheckPath = "/" + decryptedCheckPath;
 

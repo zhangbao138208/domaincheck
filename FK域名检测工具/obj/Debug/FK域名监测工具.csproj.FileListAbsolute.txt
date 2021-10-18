@@ -30,4 +30,3 @@ D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具
 D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具\bin\Debug\log4net.config
 D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具\bin\Debug\log4net.dll
 D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具\bin\Debug\log4net.xml
-D:\go\src\domainCheck\FKDomainChecker_外網代碼_20210927\FK域名检测工具\obj\Debug\FK域名监测工具.csproj.AssemblyReference.cache

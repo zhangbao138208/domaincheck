@@ -45,6 +45,7 @@ namespace FK域名检测工具管理器
 
         private void main_Load(object sender, EventArgs e)
         {
+
             DateTime today = DateTime.Now;
             DateTime threeDaysBefore = DateTime.Now.AddDays(-3);
             DateTime threeDaysBeforeFirstSecond = new DateTime(threeDaysBefore.Year, threeDaysBefore.Month, threeDaysBefore.Day, 0, 0, 0);

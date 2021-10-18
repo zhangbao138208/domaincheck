@@ -246,8 +246,13 @@ namespace FK域名检测工具管理器
 
         internal String ReadResponseFromError(WebException error)
         {
-            using (var streamReader = new StreamReader(error.Response.GetResponseStream()))
-                return streamReader.ReadToEnd();
+            if (error?.Response!=null)
+            {
+                using (var streamReader = new StreamReader(error.Response.GetResponseStream()))
+                    return streamReader.ReadToEnd();
+
+            }
+            return error?.Message;
         }
 
     }

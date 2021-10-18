@@ -130,8 +130,8 @@ namespace FK域名检测工具管理器
                     Creator = this.creator,
                     Comment = this.richTextBox_Remark.Text
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/UpdateDomain";
+                //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = Api.UpdateDomain;
                 var result = request.Execute<UpdateDomainResponse>(apiPath, updateDomainRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -150,8 +150,8 @@ namespace FK域名检测工具管理器
                     Creator = this.creator,
                     Comment = this.richTextBox_Remark.Text
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/CreateDomain";
+                //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
+                var apiPath = Api.CreateDomain;
                 var result = request.Execute<CreateDomainResponse>(apiPath, createDomainRequest.ToJson(), "POST");
                 if (result is string)
                 {

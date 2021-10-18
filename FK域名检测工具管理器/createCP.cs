@@ -93,8 +93,7 @@ namespace FK域名检测工具管理器
                     Product = this.comboBox_company.Text,
                     Creator = this.creator
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/UpdateCheckpoint";
+                var apiPath = Api.UpdateCheckpoint;
                 var result = request.Execute<UpdateCPResponse>(apiPath, updateCPRequest.ToJson(), "POST");
                 if (result is string)
                 {
@@ -112,8 +111,7 @@ namespace FK域名检测工具管理器
                     Product = this.comboBox_company.Text,
                     Creator = this.creator
                 };
-                var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
-                var apiPath = "http://" + ip + "/v1/CreateCheckpoint";
+                var apiPath = Api.CreateCheckpoint;
                 var result = request.Execute<CreateCPResponse>(apiPath, createCPRequest.ToJson(), "POST");
                 if (result is string)
                 {

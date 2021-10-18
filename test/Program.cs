@@ -19,14 +19,22 @@ namespace test
 
             // LogHelper.Info("info");
             // LogHelper.Error("err",null);
-            int ret = 1;
-            Task.Factory.StartNew(() =>
+            //int ret = 1;
+            //Task.Factory.StartNew(() =>
+            //{
+            //    Thread.Sleep(1000*6);
+            //     ret = 2;
+
+            //}).Wait(5*1000);
+            //LogHelper.Info(ret.ToString());
+            var str = string.Empty;
+            for (int i = 0; i < 3000; i++)
             {
-                Thread.Sleep(1000*6);
-                 ret = 2;
-                
-            }).Wait(5*1000);
-            LogHelper.Info(ret.ToString());
+                str += $"http://www.gooogle{i.ToString()}.com;";
+            }
+            str += "http://www.gooogle.com";
+            Console.WriteLine(str);
+            Console.ReadLine();
         }
 
         public static bool ExistsOnPath(string fileName)
