@@ -137,12 +137,14 @@ namespace FK域名检测工具
                 Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV),
                 IsManager = "0" 
             };
-            //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP", false);
+            var ip = IniConfigMgr.IniInstance.LoadConfig("ServerIP", false);
             var apiPath = Api.Login;
             var result = request.Execute<LoginResponse>(apiPath, loginRequest.ToJson(), "POST");
             if (result is string s)
             {
-                MessageBox.Show(s);
+                LogHelper.Error(s);
+                //MessageBox.Show(s);
+                MessageBox.Show($"错误原因：【当前环境ip切换导致请重试】或【网络不通畅:请检测一下http://{ip}/getip】");
                 LoginFailed();
             }
             else
@@ -154,6 +156,7 @@ namespace FK域名检测工具
                 }
                 else
                 {
+                    LogHelper.Error(loginResponse.Error);
                     MessageBox.Show(loginResponse.Error);
                     LoginFailed();
                 }

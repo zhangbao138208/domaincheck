@@ -28,9 +28,11 @@ namespace FK域名检测工具
         {
             try
             {
+                LogHelper.Debug($"GetIpData start");
                 var url = string.IsNullOrEmpty(ip) ? $"https://api.ip138.com/ip/?datatype={datatype}&token={token}" : $"https://api.ip138.com/ip/?ip={ip}&datatype={datatype}&token={token}";
                 using (var client = new WebClient())
                 {
+                    LogHelper.Debug($"GetIpData WebClient");
                     client.Encoding = Encoding.UTF8;
                     return client.DownloadString(url);
                 }
@@ -42,14 +44,17 @@ namespace FK域名检测工具
         }
         public static string GetIpAddressAndData(bool isMustCertain)
         {
+            LogHelper.Debug($"GetIpAddressAndData start");
             try
             {
                 string ip;
                 if (isMustCertain)
                 {
+                    LogHelper.Debug($"GetIpAddressAndData isMustCertain");
                     var data = GetIpData("415dcc20101f2dc52506d14c17c4aa6c");
                     if (!string.IsNullOrEmpty(data))
                     {
+                        LogHelper.Debug($"GetIpAddressAndData IsNullOrEmpty");
                         data = data.Replace(" ", "_");
                         data = data.Replace("\t", "_");
                         data = data.Replace("\n", "_");
@@ -59,6 +64,7 @@ namespace FK域名检测工具
 
                     //var t0_html = HttpGetPageHtml("https://www.ip.cn", "utf-8");
                     //var t1_html = HttpGetPageHtml("http://www.ip138.com/ips138.asp", "gbk");
+                    LogHelper.Debug($"GetIpAddressAndData t2Html");
                     var t2Html = HttpGetPageHtml("http://www.net.cn/static/customercare/yourip.asp", "gbk");
                     //var t0_ip = GetIPFromHtml(t0_html);
                     //var t1_ip = GetIPFromHtml(t1_html);
@@ -69,7 +75,7 @@ namespace FK域名检测工具
                     {
                         ip = GetUncertainIpAddress();
                     }
-
+                    LogHelper.Debug($"IsIpAddress(ip) start");
                     if (IsIpAddress(ip))
                     {
                         var data2 = GetIpData("415dcc20101f2dc52506d14c17c4aa6c", ip);
@@ -104,16 +110,20 @@ namespace FK域名检测工具
 
         private static string HttpGetPageHtml(string url, string encoding)
         {
+            LogHelper.Debug($"HttpGetPageHtml start");
             string pageHtml;
             try
             {
                 using (var myWebClient = new WebClient())
                 {
+                    LogHelper.Debug($"HttpGetPageHtml myWebClient");
                     var encode = Encoding.GetEncoding(encoding);
                     myWebClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.84 Safari/537.36");
                     myWebClient.Credentials = CredentialCache.DefaultCredentials;//获取或设置用于向Internet资源的请求进行身份验证的网络凭据
                     var pageData = myWebClient.DownloadData(url); //从指定网站下载数据
+                    LogHelper.Debug($"HttpGetPageHtml GetString");
                     pageHtml = encode.GetString(pageData);
+                    LogHelper.Debug($"HttpGetPageHtml GetString end");
                 }
             }
             catch (Exception)
@@ -129,6 +139,7 @@ namespace FK域名检测工具
         /// <returns></returns>
         private static string GetIpFromHtml(String pageHtml)
         {
+            LogHelper.Debug($"GetIpFromHtml start");
             //验证ipv4地址
             const string reg = @"(?:(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))\.){3}(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))";
             var ip = "";
@@ -137,6 +148,7 @@ namespace FK域名检测工具
             {
                 ip = m.Value;
             }
+            LogHelper.Debug($"GetIpFromHtml end");
             return ip;
         }
 

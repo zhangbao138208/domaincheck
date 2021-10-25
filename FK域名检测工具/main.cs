@@ -21,6 +21,7 @@ namespace FK域名检测工具
         private readonly int _customIndex;
         private object _lock = new object();
         private int _timer;
+        private bool _is_heartbeat;
 
        
         public Main(string userName, string companyName, int customIndex)
@@ -30,7 +31,12 @@ namespace FK域名检测工具
             this._userName = userName;
             this._companyName = companyName;
             this._customIndex = customIndex;
+            var heartbeat = IniConfigMgr.IniInstance.LoadConfig("Heartbeat");
+            LogHelper.Debug($"Heartbeat is {heartbeat}");
+            if (heartbeat != "true") return;
+            _is_heartbeat = true;
             Control.CheckForIllegalCrossThreadCalls = false;
+
 
             //HttpContext context = System.Web.HttpContext.Current;
             //HttpRuntime.Cache.Insert("context", context);
@@ -39,31 +45,34 @@ namespace FK域名检测工具
         private void main_Load(object sender, EventArgs e)
         {
             // 心跳检测
-            Task.Factory.StartNew(() => {
-            while (true)
+            if (_is_heartbeat)
             {
-                Thread.Sleep(5000);
-                if (_gMainThread != null)
-                {
-                    AddNoticeLog($"心跳检测：{_gMainThread.IsAlive}");
-                        if (!_gMainThread.IsAlive||_timer > 120)
+                Task.Factory.StartNew(() => {
+                    while (true)
+                    {
+                        Thread.Sleep(5000);
+                        if (_gMainThread != null)
                         {
-                            _cs.Cancel(false);
-                            _cs.Token.Register(() =>
+                            AddNoticeLog($"心跳检测：{_gMainThread.IsAlive}");
+                            if (!_gMainThread.IsAlive||_timer > 120)
                             {
-                                AddNoticeLog($"心跳重启:【IsAlive:{_gMainThread.IsAlive}】【_timer:{_timer}】");
-                                _gMainThread.Abort();
-                                _gMainThread = null;
-                                Action<object,EventArgs> ac = new Action<object, EventArgs>(button_start_Click);
-                                ac.Invoke(null,null);
-                            });
+                                _cs.Cancel(false);
+                                _cs.Token.Register(() =>
+                                {
+                                    AddNoticeLog($"心跳重启:【IsAlive:{_gMainThread.IsAlive}】【_timer:{_timer}】");
+                                    _gMainThread.Abort();
+                                    _gMainThread = null;
+                                    Action<object,EventArgs> ac = new Action<object, EventArgs>(button_start_Click);
+                                    ac.Invoke(null,null);
+                                });
                            
                             
-                        }
+                            }
                        
+                        }
                     }
-                }
-            });
+                });
+            }
            this.label_company.Text = this._companyName;
             this.label_account.Text = this._userName;
             this.label_mac.Text = CommonFunc.GetMac();
@@ -182,20 +191,26 @@ namespace FK域名检测工具
             int timeout = (int)paramList[0];
             string username = (string)paramList[1];
             LogHelper.Debug("循环开始前");
-            Task.Factory.StartNew(()=>
+            if (_is_heartbeat)
             {
-                Thread.Sleep(1000);
-                lock (_lock)
+                Task.Factory.StartNew(()=>
                 {
-                    _timer++;
-                }
+                    Thread.Sleep(1000);
+                    lock (_lock)
+                    {
+                        _timer++;
+                    }
                 
-            });
+                });
+            }
             for (; ;)
             {
-                lock (_lock)
+                if (_is_heartbeat)
                 {
-                    _timer = 0;
+                    lock (_lock)
+                    {
+                        _timer = 0;
+                    }
                 }
                 Thread.Sleep(100);
                 LogHelper.Debug("sleep 100ms");
@@ -504,7 +519,7 @@ namespace FK域名检测工具
                         var checkDomainResultRequest = new CheckDomainResultRequest
                         {
                             Domain = condition.Domain,
-                            CheckIp = CommonFunc.GetIpAddressAndData(true),
+                            CheckIp = CommonFunc.GetIpAddressAndData(true)+CommonFunc.GetIpAddressAndData(true)+"|"+CommonFunc.GetMac(),
                             Creator = username,
                             ClientId = CommonFunc.GetCpuId(),
                             Product = condition.Product,
@@ -551,16 +566,18 @@ namespace FK域名检测工具
 
                     if (!TrashDomains.IsTrashDomain(condition.Domain))
                     {
+                        LogHelper.Debug("TrashDomains.IsTrashDomain(condition.Domain)");
                         checkFailedDomainCount++;
                         var request = new Request();
                         decryptedCheckDomain = AesHelper.AesDecrypt(condition.Domain, AesHelper.AES_KEY, AesHelper.AES_IV);
                         if (!decryptedCheckDomain.StartsWith("http://") && !decryptedCheckDomain.StartsWith("https://"))
                             decryptedCheckDomain = "https://" + decryptedCheckDomain;
+                        LogHelper.Debug("PrintScreen(decryptedCheckDomain)");
                         var b = PrintScreen(decryptedCheckDomain) ?? new byte[0];
                         var checkDomainResultRequest = new CheckDomainResultRequest
                         {
                             Domain = condition.Domain,
-                            CheckIp = CommonFunc.GetIpAddressAndData(true),
+                            CheckIp = CommonFunc.GetIpAddressAndData(true)+CommonFunc.GetIpAddressAndData(true)+"|"+CommonFunc.GetMac(),
                             Creator = username,
                             ClientId = CommonFunc.GetCpuId(),
                             Product = condition.Product,
@@ -589,7 +606,7 @@ namespace FK域名检测工具
                 var checkDomainResultRequest = new CheckDomainResultRequest
                 {
                     Domain = condition.Domain,
-                    CheckIp = CommonFunc.GetIpAddressAndData(true),
+                    CheckIp = CommonFunc.GetIpAddressAndData(true)+"|"+CommonFunc.GetMac(),
                     Creator = username,
                     ClientId = CommonFunc.GetCpuId(),
                     Product = condition.Product,
@@ -609,11 +626,15 @@ namespace FK域名检测工具
         }
 
         private static byte[] PrintScreen(string url) {
+            LogHelper.Debug($"PrintScreen start");
             var bitmap = WebSiteThumbnail.GetWebSiteThumbnail(url, 800, 600, 400, 300);
+            LogHelper.Debug($"PrintScreen bitmap");
             if (bitmap == null) {
                 return null;
             }
+            LogHelper.Debug($"ImageToByte start");
             var result = CommonFunc.ImageToByte(bitmap);
+            LogHelper.Debug($"ImageToByte end");
             return result;
 
             /*
