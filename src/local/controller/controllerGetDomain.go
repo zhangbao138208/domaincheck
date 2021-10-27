@@ -1,13 +1,14 @@
 package controller
 
 import (
+	"encoding/json"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	_ "github.com/go-sql-driver/mysql"
-	"strconv"
 	"pkg/dbcontext"
 	"pkg/log"
-	"encoding/json"
+	"strconv"
 	"strings"
+	"time"
 )
 
 
@@ -65,6 +66,34 @@ func getDomainHandler(logger log.Logger, db *dbcontext.DB) routing.Handler {
 			}
 			return c.Write(json.RawMessage(string(b)))
 		}
+		decryptMACSplit := strings.Split(decryptMAC,"|")
+		if len(decryptMACSplit) == 2 {
+			decryptMAC = decryptMACSplit[0]
+			dateStr := decryptMACSplit[1]
+			now := time.Now().Format("2006-01-02")
+			if dateStr != now {
+				rpError := &responseData_getDomain{}
+				rpError.Error = "Token not correct."
+				rpError.DomainCheckConditions = make([]domainCheckCondition, 0)
+				b, err := json.Marshal(rpError)
+				if err != nil {
+					logger.With(c.Request.Context()).Errorf("response format to json error: %v", err)
+					return err
+				}
+				return c.Write(json.RawMessage(string(b)))
+			}
+		}else {
+			rpError := &responseData_getDomain{}
+			rpError.Error = "Token not enough."
+			rpError.DomainCheckConditions = make([]domainCheckCondition, 0)
+			b, err := json.Marshal(rpError)
+			if err != nil {
+				logger.With(c.Request.Context()).Errorf("response format to json error: %v", err)
+				return err
+			}
+			return c.Write(json.RawMessage(string(b)))
+		}
+
 		if !IsAllowedClientMAC(decryptMAC, db) {
 			rpError := &responseData_getDomain{}
 			rpError.Error = "IP not allowed."
