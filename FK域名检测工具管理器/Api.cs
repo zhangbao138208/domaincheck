@@ -3,8 +3,8 @@
     public static class Api
     {
         private static string Ip =>  IniConfigMgr.IniInstance.LoadConfig("ServerIP");
-        private static string Protocol => "http";
-        
+        private static string Protocol => IniConfigMgr.IniInstance.LoadConfig("Protocol") ?? "https";
+
         public static string Login => $"{Protocol}://{Ip}/v1/Login";
         public static string GetPageLog => $"{Protocol}://{Ip}/v1/GetPageLog";
         public static string GetLogsCount => $"{Protocol}://{Ip}/v1/GetLogsCount";

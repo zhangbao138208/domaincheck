@@ -362,7 +362,9 @@ namespace FK域名检测工具
             var getDomainRequest = new GetDomainRequest { 
                 Products = strList.ToArray(),
                 CustomIndex = this._customIndex,
-                Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV)
+                // token 安全需求
+                // Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV)
+                Mac = AesHelper.AesEncrypt($"{CommonFunc.GetMac()}|{DateTime.Now.ToString("yyyy-MM-dd")}", AesHelper.AES_KEY, AesHelper.AES_IV)
             };
             //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
             var apiPath = Api.GetDomain;
@@ -404,6 +406,7 @@ namespace FK域名检测工具
                 else
                 {
                     AddErrorLog("从服务器请求新域名失败... 错误信息：" + getDomainResponse.Error);
+                    Thread.Sleep(800);
                     return false;
                 }
             }
