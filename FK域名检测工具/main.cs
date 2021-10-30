@@ -359,12 +359,19 @@ namespace FK域名检测工具
             AddLog("向服务器请求新域名...");
 
             var request = new Request();
+
+            var hourStr = IniConfigMgr.IniInstance.LoadConfig("Hour");
+
+            int hour = 0;
+
+            int.TryParse(hourStr,out hour);
+
             var getDomainRequest = new GetDomainRequest { 
                 Products = strList.ToArray(),
                 CustomIndex = this._customIndex,
                 // token 安全需求
                 // Mac = AesHelper.AesEncrypt(CommonFunc.GetMac(), AesHelper.AES_KEY, AesHelper.AES_IV)
-                Mac = AesHelper.AesEncrypt($"{CommonFunc.GetMac()}|{DateTime.Now.ToString("yyyy-MM-dd")}", AesHelper.AES_KEY, AesHelper.AES_IV)
+                Mac = AesHelper.AesEncrypt($"{CommonFunc.GetMac()}|{DateTime.Now.AddHours(hour).ToString("yyyy-MM-dd")}", AesHelper.AES_KEY, AesHelper.AES_IV)
             };
             //var ip = IniConfigMgr.IniInstance.LoadConfig("服务器IP");
             var apiPath = Api.GetDomain;
